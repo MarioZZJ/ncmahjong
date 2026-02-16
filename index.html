@@ -24,6 +24,7 @@
       --text: #eee;
       --text-light: #aaa;
       --gold: #ffd700;
+      touch-action: manipulation;
     }
     
     body {
@@ -127,6 +128,10 @@
       transform: scale(0.9);
       background: var(--primary);
       color: var(--bg);
+    }
+    
+    .jing-btn:hover {
+      background: rgba(201, 162, 39, 0.2);
     }
     
     .jing-num {
@@ -417,13 +422,16 @@
       </div>
     </div>
     
-    <!-- 玩家身份 -->
+    <!-- 玩家身份与胡牌情况 -->
     <div class="card">
-      <div class="card-title">玩家身份</div>
-      <div class="role-selector">
-        <button class="role-btn active" data-role="zhuang">🔸 庄家</button>
-        <button class="role-btn" data-role="xian">🔹 闲家</button>
-        <button class="role-btn" data-role="pao">💣 点炮</button>
+      <div class="card-title">胡牌情况</div>
+      <div class="role-selector" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <button class="role-btn active" data-role="zhuang-zimo">🏠 庄家自摸</button>
+        <button class="role-btn" data-role="zhuang-pao">🏠 庄家点炮</button>
+        <button class="role-btn" data-role="xian-zimo">👤 闲家自摸</button>
+        <button class="role-btn" data-role="xian-pao">💣 闲家点炮</button>
+        <button class="role-btn" data-role="xian-qianggang">⚡ 抢杠胡</button>
+        <button class="role-btn" data-role="fangpao">🚫 放炮</button>
       </div>
     </div>
     
@@ -533,7 +541,7 @@
   <script>
     // 状态
     let state = {
-      role: 'zhuang',
+      role: 'zhuang-zimo',
       zheng: 0,
       fu: 0,
       handTypes: new Set(['pihu']),
@@ -663,28 +671,44 @@
       
       const huScore = baseScore * fanMulti + deguoBonus;
       
-      // 5. 庄家/点炮翻倍
-      let roleMulti = 1;
-      if (state.role === 'zhuang') {
-        roleMulti = 2;
-        if (!state.handTypes.has('tianhu') && !state.handTypes.has('dihu')) {
-          huDetails.push('庄家');
+      // 5. 角色结算
+      let perPersonScore = baseScore * fanMulti + deguoBonus;
+      let payerCount = 3;
+      let roleDetails = [];
+      
+      if (state.role.startsWith('zhuang')) {
+        roleDetails.push('庄家');
+        perPersonScore *= 2;
+        if (state.role === 'zhuang-pao') {
+          roleDetails.push('点炮');
+          payerCount = 1;
+        } else {
+          roleDetails.push('自摸');
         }
-      } else if (state.role === 'pao') {
-        roleMulti = 2;
-        if (!state.handTypes.has('dihu')) {
-          huDetails.push('点炮');
-        }
+      } else if (state.role === 'xian-zimo') {
+        roleDetails.push('闲家自摸');
+        perPersonScore *= 2;
+      } else if (state.role === 'xian-pao') {
+        roleDetails.push('闲家点炮');
+        perPersonScore *= 2;
+        payerCount = 1;
+      } else if (state.role === 'xian-qianggang') {
+        roleDetails.push('抢杠');
+        perPersonScore *= 2;
+      } else if (state.role === 'fangpao') {
+        roleDetails.push('放炮');
+        perPersonScore = -(baseScore * fanMulti + deguoBonus);
+        payerCount = 1;
       }
       
-      // 庄家精牌不翻倍，只算胡牌分翻倍
-      const finalScore = (jingTotalScore + gangScore + huScore) * roleMulti;
+      const finalScore = perPersonScore * payerCount;
       
       // 更新UI
       resultScore.innerHTML = `${finalScore}<span class="score-unit">子</span>`;
       
       // 详情
-      resultDetail.innerHTML = huDetails.map(d => `<span class="highlight">${d}</span>`).join('');
+      const allDetails = [...roleDetails, ...huDetails];
+      resultDetail.innerHTML = allDetails.map(d => `<span class="highlight">${d}</span>`).join('');
       
       // 分项明细
       document.getElementById('breakdown-jing').textContent = jingScore;
@@ -759,7 +783,7 @@
     // 重置
     document.getElementById('btn-reset').addEventListener('click', () => {
       state = {
-        role: 'zhuang',
+        role: 'zhuang-zimo',
         zheng: 0,
         fu: 0,
         handTypes: new Set(['pihu']),
@@ -770,7 +794,7 @@
       fuNum.textContent = 0;
       
       document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.role-btn[data-role="zhuang"]').classList.add('active');
+      document.querySelector('.role-btn[data-role="zhuang-zimo"]').classList.add('active');
       
       document.querySelectorAll('.hand-type').forEach(el => {
         el.classList.toggle('active', el.dataset.type === 'pihu');
@@ -787,7 +811,7 @@
       const jing = document.getElementById('breakdown-jing').textContent;
       const gang = document.getElementById('breakdown-gang').textContent;
       const hu = document.getElementById('breakdown-fan').textContent;
-      const detail = Array.from(document.querySelectorAll('#result-detail span')).map(s => s.textContent).join ' ';
+      const detail = Array.from(document.querySelectorAll('#result-detail span')).map(s => s.textContent).join(' ');
       
       const text = `🀄 南昌麻将记分
 得分：${score}
