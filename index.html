@@ -281,6 +281,18 @@
     .section-toggle:active { background: rgba(255,255,255,0.06); }
     .gang-section { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--divider); }
     .gang-section.show { display: block; }
+
+    .hu-explain {
+      display: none;
+      margin-top: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--cream-mute);
+      background: rgba(0,0,0,0.15);
+      border-radius: 6px;
+      line-height: 1.6;
+    }
+    .hu-explain.show { display: block; }
   </style>
 </head>
 <body>
@@ -376,6 +388,7 @@
         <button class="hu-btn" data-type="deguo">德国 ×2+5</button>
         <button class="hu-btn" data-type="gangjin">杠精 +10/家</button>
       </div>
+      <div class="hu-explain" id="hu-explain"></div>
     </div>
 
     <div class="card result-card">
@@ -755,8 +768,76 @@
       dihu: ['tianhu']
     };
 
+    const huExplains = {
+      qidui: '小七对：手牌由7组对子组成，不能有吃碰杠。胡牌倍数×2。',
+      dqidui: '碰碰胡：4组刻子（或杠）+ 1对雀头，没有顺子。胡牌倍数×2。',
+      shisanlan: '十三烂：万条筒每张牌在同花色中间隔≥2，字牌不重复，不能吃碰杠。胡牌倍数×2。',
+      qixing: '七星：在小七对或十三烂基础上，集齐东南西北中发白7张字牌。胡牌倍数×4（替代基础牌型的×2）。',
+      jingdiao: '精钓：手中只剩1张牌时胡牌，且该牌为精牌（万能牌）。胡牌倍数×2，叠加自摸。',
+      gangshang: '杠上开花：杠牌后补牌时自摸胡牌。胡牌倍数×2，叠加自摸。',
+      qianggang: '抢杠胡：其他玩家补杠时，你恰好能胡该牌。胡牌倍数×2。',
+      tianhu: '天胡：庄家起手14张直接胡牌。固定每家付20子（精钓时40子）。',
+      dihu: '地胡：庄家打出的第一张牌被闲家胡。固定每家付20子（精钓时40子）。',
+      deguo: '德国：胡牌时手中无精牌，或精牌未当万能牌使用。自摸三家各+5，点炮时三家都付、点炮者额外×2+5。',
+      gangjin: '杠精：将4张精牌开杠。其他三家各付10子（独立于胡牌分计算）。'
+    };
+
+    const explainEl = document.getElementById('hu-explain');
+    let longPressTimer = null;
+    let longPressed = false;
+
+    function showExplain(type) {
+      if (huExplains[type]) {
+        explainEl.textContent = huExplains[type];
+        explainEl.classList.add('show');
+        explainEl.dataset.type = type;
+      }
+    }
+
+    function hideExplain() {
+      explainEl.classList.remove('show');
+      explainEl.dataset.type = '';
+    }
+
     document.querySelectorAll('.hu-btn:not(.hu-player)').forEach(btn => {
+      // 长按显示解释
+      btn.addEventListener('touchstart', (e) => {
+        longPressed = false;
+        longPressTimer = setTimeout(() => {
+          longPressed = true;
+          const t = btn.dataset.type;
+          if (explainEl.dataset.type === t && explainEl.classList.contains('show')) {
+            hideExplain();
+          } else {
+            showExplain(t);
+          }
+        }, 500);
+      }, { passive: true });
+
+      btn.addEventListener('touchend', () => {
+        clearTimeout(longPressTimer);
+        if (longPressed) { longPressed = false; return; }
+      });
+
+      btn.addEventListener('touchmove', () => {
+        clearTimeout(longPressTimer);
+      }, { passive: true });
+
+      // PC 端右键也能看解释
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const t = btn.dataset.type;
+        if (explainEl.dataset.type === t && explainEl.classList.contains('show')) {
+          hideExplain();
+        } else {
+          showExplain(t);
+        }
+      });
+
+      // 点击：切换选中 + 隐藏解释
       btn.addEventListener('click', () => {
+        if (longPressed) return;
+        hideExplain();
         const t = btn.dataset.type;
         if (state.huTypes.has(t)) {
           state.huTypes.delete(t);
