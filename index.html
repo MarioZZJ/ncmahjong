@@ -266,6 +266,16 @@
     </div>
     
     <div class="card">
+      <div class="card-title">🎯 胡牌玩家</div>
+      <div class="zhuang-selector">
+        <button class="hu-btn hu-player" data-hu="dong">东家</button>
+        <button class="hu-btn hu-player active" data-hu="nan">南家</button>
+        <button class="hu-btn hu-player" data-hu="xi">西家</button>
+        <button class="hu-btn hu-player" data-hu="bei">北家</button>
+      </div>
+    </div>
+    
+    <div class="card">
       <div class="card-title">💣 点炮（自摸则不选）</div>
       <div class="pao-selector">
         <button class="pao-btn active" data-pao="none">自摸</button>
@@ -343,6 +353,7 @@
     
     let state = {
       zhuang: 'nan',
+      hu: 'nan',  // 胡牌玩家
       pao: 'none',
       huTypes: new Set(),
       players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
@@ -398,9 +409,7 @@
       
       // 5. 胡牌分计算
       let baseScore = 0, huMulti = 1;
-      let huPerson = state.zhuang;
       let isZimo = state.pao === 'none';
-      if (!isZimo) huPerson = state.pao;
       
       // 判断胡牌类型
       if (state.huTypes.has('tianhu') || state.huTypes.has('dihu')) {
@@ -449,7 +458,7 @@
         
         // 杠精分
         if (state.huTypes.has('gangjin')) {
-          if (p === huPerson) {
+          if (p === state.hu) {
             score += gangjinScore;
             detail.push(`杠精: +${gangjinScore}`);
           } else {
@@ -458,26 +467,24 @@
           }
         }
         
-        // 胡牌分
-        if (p === huPerson) {
-          // 胡牌者
-          let hp = huScore;
-          if (huPerson === state.zhuang) {
-            // 庄家胡：基础分×2
-            hp *= 2;
-          }
-          
+        // 胡牌分结算
+        // 胡牌分 = 基础分 × 番数
+        // 庄家胡：每家付 (基础分×2)
+        // 闲家自摸：庄家付 (基础分×2)，其他闲家付基础分
+        // 闲家点炮：点炮者付 (基础分×2)
+        
+        if (p === state.hu) {
+          // 胡牌者收款
           if (isZimo) {
-            // 自摸：三家各付（庄家付双倍）
-            const fromZhuang = hp * 2;
-            const fromOther = hp;
-            // 其他三家中庄家付双倍
-            score += fromZhuang + fromOther * 2;
-            detail.push(`自摸: +${fromZhuang}+${fromOther}×2`);
+            // 自摸：三家付款
+            const payFromZhuang = huScore * 2;
+            const payFromOther = huScore;
+            score += payFromZhuang + payFromOther * 2;
+            detail.push(`自摸: +${payFromZhuang}+${payFromOther}×2`);
           } else {
-            // 点炮：点炮者付×2
-            score += hp * 2;
-            detail.push(`胡牌: +${hp}×2`);
+            // 点炮：点炮者付款
+            score += huScore * 2;
+            detail.push(`胡牌: +${huScore}×2`);
           }
           
           // 德国额外+5
@@ -485,16 +492,13 @@
             score += 5;
             detail.push(`德国: +5`);
           }
-        } else if (p === state.pao && !isZimo) {
-          // 点炮者付钱
-          let hp = huScore;
-          if (huPerson === state.zhuang) hp *= 2;
-          score -= hp * 2;
-          detail.push(`点炮: -${hp}×2`);
+        } else if (!isZimo && p === state.pao) {
+          // 点炮者付款
+          score -= huScore * 2;
+          detail.push(`点炮: -${huScore}×2`);
         } else if (isZimo) {
-          // 自摸时非胡牌者付款（庄家付双倍）
-          let pay = huScore;
-          if (state.zhuang === p) pay *= 2;
+          // 自摸时非胡牌者付款
+          const pay = (p === state.zhuang) ? huScore * 2 : huScore;
           score -= pay;
           detail.push(`自摸: -${pay}`);
         }
@@ -572,8 +576,18 @@
       });
     });
     
+    // 胡牌玩家选择
+    document.querySelectorAll('.hu-player').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.hu-player').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.hu = btn.dataset.hu;
+        calculate();
+      });
+    });
+    
     // 胡牌类型
-    document.querySelectorAll('.hu-btn').forEach(btn => {
+    document.querySelectorAll('.hu-btn:not(.hu-player)').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = btn.dataset.type;
         state.huTypes.has(t) ? state.huTypes.delete(t) : state.huTypes.add(t);
@@ -593,7 +607,7 @@
     // 重置
     document.getElementById('btn-reset').addEventListener('click', () => {
       state = {
-        zhuang: 'nan', pao: 'none', huTypes: new Set(),
+        zhuang: 'nan', hu: 'nan', pao: 'none', huTypes: new Set(),
         players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
       };
       players.forEach(p => {
@@ -602,9 +616,11 @@
       });
       document.querySelectorAll('.zhuang-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.zhuang-btn[data-zhuang="nan"]').classList.add('active');
+      document.querySelectorAll('.hu-player').forEach(b => b.classList.remove('active'));
+      document.querySelector('.hu-player[data-hu="nan"]').classList.add('active');
       document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.pao-btn[data-pao="none"]').classList.add('active');
-      document.querySelectorAll('.hu-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.hu-btn:not(.hu-player)').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.player-detail').forEach(d => d.classList.remove('show'));
       calculate();
     });
