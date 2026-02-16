@@ -4,25 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>南昌麻将记分器</title>
-  <meta name="theme-color" content="#1a73e8">
+  <meta name="theme-color" content="#c9a227">
   <link rel="manifest" href="manifest.json">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
     :root {
       --primary: #c9a227;
-      --primary-dark: #a68520;
+      --primary-light: #e6c84d;
       --accent: #e74c3c;
-      --bg: #1a1a2e;
-      --card: #16213e;
-      --card-light: #1f3460;
-      --text: #eee;
-      --text-light: #aaa;
+      --bg: #0d1117;
+      --card: #161b22;
+      --card-border: #30363d;
+      --text: #e6edf3;
+      --text-light: #8b949e;
+      --red: #f85149;
+      --green: #3fb950;
       --gold: #ffd700;
       touch-action: manipulation;
     }
@@ -32,342 +29,173 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding-bottom: 110px;
-      background-image: 
-        radial-gradient(ellipse at top, #1f3460 0%, transparent 50%),
-        radial-gradient(ellipse at bottom, #0f0f23 0%, transparent 50%);
+      padding-bottom: 120px;
     }
     
     .header {
-      background: linear-gradient(135deg, var(--primary) 0%, #e6b800 100%);
-      color: #1a1a2e;
-      padding: 24px 20px;
-      text-align: center;
-      border-radius: 0 0 24px 24px;
-      box-shadow: 0 4px 30px rgba(201, 162, 39, 0.4);
-    }
-    
-    .header h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    
-    .header p {
-      font-size: 14px;
-      opacity: 0.85;
-    }
-    
-    .container {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #0d1117;
       padding: 20px;
-      max-width: 500px;
-      margin: 0 auto;
+      text-align: center;
     }
+    
+    .header h1 { font-size: 22px; font-weight: 700; }
+    
+    .container { padding: 16px; max-width: 600px; margin: 0 auto; }
     
     .card {
       background: var(--card);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
     }
     
     .card-title {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--gold);
-    }
-    
-    .card-title::before {
-      content: "♦";
-      font-size: 12px;
-    }
-    
-    /* 精牌输入 */
-    .jing-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    
-    .jing-row:last-child {
-      border-bottom: none;
-    }
-    
-    .jing-label {
       font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 12px;
     }
     
-    .jing-count {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .players-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    
+    .player-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
     }
+    
+    .player-card.active { border-color: var(--primary); background: rgba(201,162,39,0.08); }
+    
+    .player-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .player-name .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--primary);
+      color: #0d1117;
+      font-weight: 600;
+    }
+    
+    .jing-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .jing-input-row:last-child { margin-bottom: 0; }
+    .jing-label { font-size: 12px; color: var(--text-light); }
+    .jing-controls { display: flex; align-items: center; gap: 6px; }
     
     .jing-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid var(--primary);
-      background: transparent;
-      color: var(--primary);
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .jing-btn:active {
-      transform: scale(0.9);
-      background: var(--primary);
-      color: var(--bg);
-    }
-    
-    .jing-btn:hover {
-      background: rgba(201, 162, 39, 0.2);
-    }
-    
-    .jing-num {
-      font-size: 20px;
-      font-weight: 700;
-      min-width: 28px;
-      text-align: center;
-      color: var(--gold);
-    }
-    
-    .jing-sub {
-      font-size: 12px;
-      color: var(--text-light);
-      min-width: 50px;
-      text-align: right;
-    }
-    
-    /* 玩家身份 */
-    .role-selector {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .role-btn {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
       background: transparent;
       color: var(--text);
-      font-size: 15px;
-      font-weight: 500;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
-    .role-btn.active {
-      border-color: var(--primary);
-      background: rgba(201, 162, 39, 0.15);
-      color: var(--gold);
-    }
+    .jing-btn:active { background: var(--primary); color: #0d1117; }
+    .jing-val { width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gold); }
     
-    /* 牌型多选 */
-    .hand-types {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
+    .zhuang-selector, .pao-selector { display: flex; gap: 8px; flex-wrap: wrap; }
     
-    .hand-type {
-      padding: 10px 12px;
-      border: 2px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
+    .zhuang-btn, .pao-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 10px;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
       background: transparent;
+      color: var(--text-light);
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
     }
     
-    .hand-type.active {
-      border-color: var(--primary);
-      background: rgba(201, 162, 39, 0.15);
-    }
+    .zhuang-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
+    .pao-btn.active { border-color: var(--accent); background: rgba(248,81,73,0.15); color: var(--red); }
     
-    .hand-type .name {
-      font-weight: 500;
-    }
+    .hu-types, .special-options { display: flex; flex-wrap: wrap; gap: 8px; }
     
-    .hand-type .desc {
-      font-size: 11px;
-      color: var(--text-light);
-    }
-    
-    .hand-type.active .desc {
-      color: var(--gold);
-    }
-    
-    /* 特殊选项 */
-    .special-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    
-    .special-btn {
+    .hu-btn, .special-btn {
       padding: 8px 14px;
-      border: 2px solid rgba(255,255,255,0.1);
+      border: 1px solid var(--card-border);
       border-radius: 20px;
       background: transparent;
       color: var(--text-light);
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
     }
     
-    .special-btn.active {
-      border-color: var(--accent);
-      background: rgba(231, 76, 60, 0.15);
-      color: var(--accent);
-    }
+    .hu-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
+    .special-btn.active { border-color: var(--accent); background: rgba(248,81,73,0.15); color: var(--red); }
     
-    /* 结果显示 */
-    .result-card {
-      background: linear-gradient(135deg, #1f3460 0%, #16213e 100%);
-      border: 2px solid var(--primary);
-      text-align: center;
-      padding: 24px 20px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .result-card::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(201,162,39,0.1) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    
-    .result-card .label {
-      font-size: 13px;
-      color: var(--text-light);
-      margin-bottom: 6px;
-    }
-    
-    .result-card .score {
-      font-size: 48px;
-      font-weight: 700;
-      line-height: 1.1;
-      margin-bottom: 8px;
-      color: var(--gold);
-      text-shadow: 0 0 20px rgba(255,215,0,0.3);
-    }
-    
-    .result-card .score-unit {
-      font-size: 18px;
-      color: var(--text-light);
-    }
-    
-    .result-detail {
+    .bangjin-check {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-      margin-top: 12px;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--card-border);
     }
     
-    .result-detail span {
-      background: rgba(255,255,255,0.08);
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      color: var(--text-light);
-    }
+    .bangjin-check input { width: 16px; height: 16px; accent-color: var(--gold); }
+    .bangjin-check label { font-size: 13px; color: var(--text-light); }
     
-    .result-detail span.highlight {
-      background: rgba(201,162,39,0.2);
-      color: var(--gold);
-    }
+    .result-card { background: linear-gradient(180deg, rgba(201,162,39,0.1) 0%, var(--card) 100%); border: 1px solid var(--primary); }
     
-    /* 分项明细 */
-    .score-breakdown {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      text-align: left;
-    }
+    .result-table { width: 100%; }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--card-border); }
+    .result-row:last-child { border-bottom: none; }
+    .result-row.header { font-size: 12px; color: var(--text-light); padding-bottom: 8px; }
+    .player-col { display: flex; align-items: center; gap: 6px; }
     
-    .breakdown-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      padding: 4px 0;
-      color: var(--text-light);
-    }
+    .score-col { font-weight: 600; font-size: 16px; min-width: 60px; text-align: right; }
+    .score-col.positive { color: var(--green); }
+    .score-col.negative { color: var(--red); }
+    .score-col.zhuang { color: var(--gold); }
     
-    .breakdown-row span:last-child {
-      color: var(--text);
-      font-weight: 500;
-    }
+    .detail-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--card-border); }
+    .detail-title { font-size: 12px; color: var(--text-light); margin-bottom: 8px; }
+    .detail-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-light); padding: 4px 0; }
+    .detail-row span:last-child { color: var(--text); }
     
-    /* 底部分享栏 */
     .action-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       background: var(--card);
-      padding: 14px 20px;
-      padding-bottom: calc(14px + env(safe-area-inset-bottom));
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+      padding: 12px 16px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
       display: flex;
-      gap: 12px;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      gap: 10px;
+      border-top: 1px solid var(--card-border);
     }
     
-    .btn {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+    .btn { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-reset { background: rgba(255,255,255,0.1); color: var(--text); }
+    .btn-share { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #0d1117; }
     
-    .btn-reset {
-      background: rgba(255,255,255,0.1);
-      color: var(--text);
-    }
-    
-    .btn-share {
-      background: linear-gradient(135deg, var(--primary) 0%, #e6b800 100%);
-      color: #1a1a2e;
-    }
-    
-    .btn:active {
-      transform: scale(0.97);
-    }
-    
-    /* Toast */
     .toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: var(--card-light);
+      background: var(--card);
       color: var(--text);
-      padding: 12px 24px;
+      padding: 12px 20px;
       border-radius: 8px;
       font-size: 14px;
       transition: transform 0.3s;
@@ -375,120 +203,82 @@
       border: 1px solid var(--primary);
     }
     
-    .toast.show {
-      transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🀄 南昌麻将记分器</h1>
-    <p>精牌 · 番数 · 冲关</p>
-  </div>
+  <div class="header"><h1>🀄 南昌麻将记分器</h1></div>
   
   <div class="container">
-    <!-- 精牌统计 -->
     <div class="card">
-      <div class="card-title">精牌结算</div>
-      <div class="jing-row">
-        <span class="jing-label">正精 🀄</span>
-        <div class="jing-count">
-          <button class="jing-btn" data-type="zheng" data-dir="-1">−</button>
-          <span class="jing-num" id="zheng-num">0</span>
-          <button class="jing-btn" data-type="zheng" data-dir="1">+</button>
-          <span class="jing-sub" id="zheng-sub">×2</span>
+      <div class="card-title">🎴 四家精牌</div>
+      <div class="players-grid">
+        <div class="player-card" data-player="dong">
+          <div class="player-name"><span>东家</span><span class="badge" id="dong-badge" style="display:none">庄</span></div>
+          <div class="jing-input-row"><span class="jing-label">正精</span><div class="jing-controls"><button class="jing-btn" data-player="dong" data-type="zheng" data-dir="-1">−</button><span class="jing-val" id="dong-zheng">0</span><button class="jing-btn" data-player="dong" data-type="zheng" data-dir="1">+</button></div></div>
+          <div class="jing-input-row"><span class="jing-label">副精</span><div class="jing-controls"><button class="jing-btn" data-player="dong" data-type="fu" data-dir="-1">−</button><span class="jing-val" id="dong-fu">0</span><button class="jing-btn" data-player="dong" data-type="fu" data-dir="1">+</button></div></div>
+        </div>
+        <div class="player-card" data-player="nan">
+          <div class="player-name"><span>南家</span><span class="badge" id="nan-badge" style="display:none">庄</span></div>
+          <div class="jing-input-row"><span class="jing-label">正精</span><div class="jing-controls"><button class="jing-btn" data-player="nan" data-type="zheng" data-dir="-1">−</button><span class="jing-val" id="nan-zheng">0</span><button class="jing-btn" data-player="nan" data-type="zheng" data-dir="1">+</button></div></div>
+          <div class="jing-input-row"><span class="jing-label">副精</span><div class="jing-controls"><button class="jing-btn" data-player="nan" data-type="fu" data-dir="-1">−</button><span class="jing-val" id="nan-fu">0</span><button class="jing-btn" data-player="nan" data-type="fu" data-dir="1">+</button></div></div>
+        </div>
+        <div class="player-card" data-player="xi">
+          <div class="player-name"><span>西家</span><span class="badge" id="xi-badge" style="display:none">庄</span></div>
+          <div class="jing-input-row"><span class="jing-label">正精</span><div class="jing-controls"><button class="jing-btn" data-player="xi" data-type="zheng" data-dir="-1">−</button><span class="jing-val" id="xi-zheng">0</span><button class="jing-btn" data-player="xi" data-type="zheng" data-dir="1">+</button></div></div>
+          <div class="jing-input-row"><span class="jing-label">副精</span><div class="jing-controls"><button class="jing-btn" data-player="xi" data-type="fu" data-dir="-1">−</button><span class="jing-val" id="xi-fu">0</span><button class="jing-btn" data-player="xi" data-type="fu" data-dir="1">+</button></div></div>
+        </div>
+        <div class="player-card" data-player="bei">
+          <div class="player-name"><span>北家</span><span class="badge" id="bei-badge" style="display:none">庄</span></div>
+          <div class="jing-input-row"><span class="jing-label">正精</span><div class="jing-controls"><button class="jing-btn" data-player="bei" data-type="zheng" data-dir="-1">−</button><span class="jing-val" id="bei-zheng">0</span><button class="jing-btn" data-player="bei" data-type="zheng" data-dir="1">+</button></div></div>
+          <div class="jing-input-row"><span class="jing-label">副精</span><div class="jing-controls"><button class="jing-btn" data-player="bei" data-type="fu" data-dir="-1">−</button><span class="jing-val" id="bei-fu">0</span><button class="jing-btn" data-player="bei" data-type="fu" data-dir="1">+</button></div></div>
         </div>
       </div>
-      <div class="jing-row">
-        <span class="jing-label">副精 🀅</span>
-        <div class="jing-count">
-          <button class="jing-btn" data-type="fu" data-dir="-1">−</button>
-          <span class="jing-num" id="fu-num">0</span>
-          <button class="jing-btn" data-type="fu" data-dir="1">+</button>
-          <span class="jing-sub">×1</span>
-        </div>
-      </div>
-      <div class="jing-row">
-        <span class="jing-label">霸王精 👑</span>
-        <div class="jing-count">
-          <span class="jing-num" id="bangjin-tag" style="color: var(--text-light);">未计算</span>
-        </div>
-      </div>
-      <div class="jing-row">
-        <span class="jing-label">冲关奖励 🎯</span>
-        <div class="jing-count">
-          <span class="jing-num" id="chongguan-tag" style="color: var(--gold);">无</span>
-        </div>
+      <div class="bangjin-check">
+        <input type="checkbox" id="bangjin">
+        <label for="bangjin">霸王精（只有一家有精）</label>
       </div>
     </div>
     
-    <!-- 玩家身份与胡牌情况 -->
     <div class="card">
-      <div class="card-title">胡牌情况</div>
-      <div class="role-selector" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
-        <button class="role-btn active" data-role="zhuang-zimo">🏠 庄家自摸</button>
-        <button class="role-btn" data-role="zhuang-pao">🏠 庄家点炮</button>
-        <button class="role-btn" data-role="xian-zimo">👤 闲家自摸</button>
-        <button class="role-btn" data-role="xian-pao">💣 闲家点炮</button>
-        <button class="role-btn" data-role="xian-qianggang">⚡ 抢杠胡</button>
-        <button class="role-btn" data-role="fangpao">🚫 放炮</button>
+      <div class="card-title">👑 庄家</div>
+      <div class="zhuang-selector">
+        <button class="zhuang-btn" data-zhuang="dong">东家</button>
+        <button class="zhuang-btn active" data-zhuang="nan">南家</button>
+        <button class="zhuang-btn" data-zhuang="xi">西家</button>
+        <button class="zhuang-btn" data-zhuang="bei">北家</button>
       </div>
     </div>
     
-    <!-- 胡牌类型 -->
     <div class="card">
-      <div class="card-title">胡牌类型</div>
-      <div class="hand-types">
-        <div class="hand-type" data-type="zimo" data-desc="自摸×2">
-          <span class="name">自摸</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type active" data-type="pihu" data-desc="基础1番">
-          <span class="name">平胡</span>
-          <span class="desc">1番</span>
-        </div>
-        <div class="hand-type" data-type="pengpenghu" data-desc="碰碰胡×2">
-          <span class="name">大七对</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="qidui" data-desc="七对×2">
-          <span class="name">小七对</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="shisanlan" data-desc="十三烂×2">
-          <span class="name">十三烂</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="qixing" data-desc="七星×4">
-          <span class="name">七星十三烂</span>
-          <span class="desc">×4</span>
-        </div>
-        <div class="hand-type" data-type="jingdiao" data-desc="精钓×2">
-          <span class="name">精钓</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="qianggang" data-desc="抢杠×2">
-          <span class="name">抢杠胡</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="gangshang" data-desc="杠开×2">
-          <span class="name">杠上开花</span>
-          <span class="desc">×2</span>
-        </div>
-        <div class="hand-type" data-type="tianhu" data-desc="20子">
-          <span class="name">天胡</span>
-          <span class="desc">20子</span>
-        </div>
-        <div class="hand-type" data-type="dihu" data-desc="20子">
-          <span class="name">地胡</span>
-          <span class="desc">20子</span>
-        </div>
+      <div class="card-title">💣 点炮（自摸则不选）</div>
+      <div class="pao-selector">
+        <button class="pao-btn active" data-pao="none">自摸</button>
+        <button class="pao-btn" data-pao="dong">东家</button>
+        <button class="pao-btn" data-pao="nan">南家</button>
+        <button class="pao-btn" data-pao="xi">西家</button>
+        <button class="pao-btn" data-pao="bei">北家</button>
       </div>
     </div>
     
-    <!-- 特殊选项 -->
     <div class="card">
-      <div class="card-title">特殊状态</div>
+      <div class="card-title">🀐 胡牌类型（可多选）</div>
+      <div class="hu-types">
+        <button class="hu-btn" data-type="pinghu">平胡</button>
+        <button class="hu-btn" data-type="zimo">自摸</button>
+        <button class="hu-btn" data-type="qidui">小七对</button>
+        <button class="hu-btn" data-type="dqidui">大七对</button>
+        <button class="hu-btn" data-type="shisanlan">十三烂</button>
+        <button class="hu-btn" data-type="qixing">七星</button>
+        <button class="hu-btn" data-type="jingdiao">精钓</button>
+        <button class="hu-btn" data-type="gangshang">杠上花</button>
+        <button class="hu-btn" data-type="tianhu">天胡</button>
+        <button class="hu-btn" data-type="dihu">地胡</button>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">⚡ 特殊状态</div>
       <div class="special-options">
         <button class="special-btn" data-special="deguo">🇩🇪 德国</button>
         <button class="special-btn" data-special="dezhongde">🇩🇪🇩🇪 德中德</button>
@@ -498,343 +288,236 @@
       </div>
     </div>
     
-    <!-- 计算结果 -->
     <div class="card result-card">
-      <div class="label">胡牌得分</div>
-      <div class="score" id="result-score">2<span class="score-unit">子</span></div>
-      <div class="result-detail" id="result-detail"></div>
-      
-      <div class="score-breakdown">
-        <div class="breakdown-row">
-          <span>精牌分</span>
-          <span id="breakdown-jing">0</span>
-        </div>
-        <div class="breakdown-row">
-          <span>冲关/霸王</span>
-          <span id="breakdown-chongguan">0</span>
-        </div>
-        <div class="breakdown-row">
-          <span>杠牌分</span>
-          <span id="breakdown-gang">0</span>
-        </div>
-        <div class="breakdown-row">
-          <span>胡牌番数</span>
-          <span id="breakdown-fan">0</span>
-        </div>
-        <div class="breakdown-row" style="color: var(--gold);">
-          <span>总计</span>
-          <span id="breakdown-total">0</span>
-        </div>
+      <div class="card-title">📊 结算结果</div>
+      <div class="result-table">
+        <div class="result-row header"><span>玩家</span><span style="text-align:right">进出子</span></div>
+        <div class="result-row"><div class="player-col"><span>东家</span><span class="badge" id="res-dong-badge" style="display:none">庄</span></div><span class="score-col" id="res-dong">0</span></div>
+        <div class="result-row"><div class="player-col"><span>南家</span><span class="badge" id="res-nan-badge" style="display:none">庄</span></div><span class="score-col" id="res-nan">0</span></div>
+        <div class="result-row"><div class="player-col"><span>西家</span><span class="badge" id="res-xi-badge" style="display:none">庄</span></div><span class="score-col" id="res-xi">0</span></div>
+        <div class="result-row"><div class="player-col"><span>北家</span><span class="badge" id="res-bei-badge" style="display:none">庄</span></div><span class="score-col" id="res-bei">0</span></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-title">明细</div>
+        <div class="detail-row"><span>精牌分</span><span id="detail-jing">0</span></div>
+        <div class="detail-row"><span>冲关/霸王</span><span id="detail-chongguan">0</span></div>
+        <div class="detail-row"><span>杠牌分</span><span id="detail-gang">0</span></div>
+        <div class="detail-row"><span>胡牌分</span><span id="detail-hu">0</span></div>
       </div>
     </div>
   </div>
   
-  <!-- 底部操作栏 -->
   <div class="action-bar">
     <button class="btn btn-reset" id="btn-reset">重置</button>
     <button class="btn btn-share" id="btn-share">复制战绩</button>
   </div>
   
-  <!-- Toast -->
   <div class="toast" id="toast">已复制到剪贴板</div>
   
   <script>
-    // 状态
+    const players = ['dong', 'nan', 'xi', 'bei'];
+    
     let state = {
-      role: 'zhuang-zimo',
-      zheng: 0,
-      fu: 0,
-      handTypes: new Set(['pihu']),
-      specials: new Set()
+      zhuang: 'nan',
+      pao: 'none',
+      huTypes: new Set(),
+      specials: new Set(),
+      bangjin: false,
+      players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
     };
     
-    // 牌型定义
-    const handTypeData = {
-      pihu: { name: '平胡', fan: 1 },
-      zimo: { name: '自摸', fan: 2 },
-      pengpenghu: { name: '大七对', fan: 2 },
-      qidui: { name: '小七对', fan: 2 },
-      shisanlan: { name: '十三烂', fan: 2 },
-      qixing: { name: '七星十三烂', fan: 4 },
-      jingdiao: { name: '精钓', fan: 2 },
-      qianggang: { name: '抢杠胡', fan: 2 },
-      gangshang: { name: '杠上开花', fan: 2 },
-      tianhu: { name: '天胡', base: 20 },
-      dihu: { name: '地胡', base: 20 }
-    };
-    
-    // DOM 元素
-    const zhengNum = document.getElementById('zheng-num');
-    const fuNum = document.getElementById('fu-num');
-    const resultScore = document.getElementById('result-score');
-    const resultDetail = document.getElementById('result-detail');
-    const toast = document.getElementById('toast');
-    
-    // 冲关倍率表
-    const chongguanTable = {
-      5: 2, 6: 3, 7: 4, 8: 5, 9: 6, 10: 7,
-      11: 8, 12: 9, 13: 10, 14: 11
-    };
+    const chongguanTable = {5:2,6:3,7:4,8:5,9:6,10:7,11:8,12:9,13:10,14:11};
     
     function calculate() {
-      // 1. 计算精牌分
-      const jingScore = state.zheng * 2 + state.fu * 1;
+      const jingScores = {};
+      let totalJing = 0;
       
-      // 2. 计算冲关
-      const totalJing = state.zheng + state.fu;
-      let chongguanMulti = 1;
-      let chongguanScore = 0;
+      players.forEach(p => {
+        jingScores[p] = state.players[p].zheng * 2 + state.players[p].fu;
+        totalJing += jingScores[p];
+      });
       
-      if (totalJing >= 5 && chongguanTable[totalJing]) {
-        chongguanMulti = chongguanTable[totalJing];
-        chongguanScore = jingScore * (chongguanMulti - 1);
-      }
+      let chongguanMulti = totalJing >= 5 && chongguanTable[totalJing] ? chongguanTable[totalJing] : 1;
+      let bangjinPlayer = null;
       
-      // 更新冲关显示
-      const chongguanTag = document.getElementById('chongguan-tag');
-      if (chongguanScore > 0) {
-        chongguanTag.textContent = `×${chongguanMulti} (+${chongguanScore})`;
-      } else {
-        chongguanTag.textContent = '无';
-      }
-      
-      // 霸王精（简化：假设只有你有精）
-      let bangjinScore = 0;
-      if (totalJing > 0) {
-        // 简化判断：正精>0且总额=正精数时为霸王
-        if (state.zheng > 0 && totalJing === state.zheng) {
-          bangjinScore = jingScore;
-          document.getElementById('bangjin-tag').textContent = `✓ (+${bangjinScore})`;
-          document.getElementById('bangjin-tag').style.color = 'var(--gold)';
-        } else if (state.fu > 0 && totalJing === state.fu) {
-          bangjinScore = jingScore;
-          document.getElementById('bangjin-tag').textContent = `✓ (+${bangjinScore})`;
-          document.getElementById('bangjin-tag').style.color = 'var(--gold)';
-        } else {
-          bangjinScore = 0;
-          document.getElementById('bangjin-tag').textContent = '无';
-          document.getElementById('bangjin-tag').style.color = 'var(--text-light)';
-        }
-      } else {
-        document.getElementById('bangjin-tag').textContent = '无';
-        document.getElementById('bangjin-tag').style.color = 'var(--text-light)';
-      }
-      
-      const jingTotalScore = jingScore + chongguanScore + bangjinScore;
-      
-      // 3. 杠牌分
-      let gangScore = 0;
-      if (state.specials.has('gang')) gangScore += 6; // 暗杠3家×2
-      if (state.specials.has('minggang')) gangScore += 3; // 明杠3家×1
-      if (state.specials.has('gangjin')) gangScore += 30; // 杠精+10×3家
-      
-      // 4. 胡牌分
-      let baseScore = 1; // 平胡基础
-      let fanMulti = 1;
-      let huDetails = [];
-      
-      // 天胡地胡单独计算
-      if (state.handTypes.has('tianhu') || state.handTypes.has('dihu')) {
-        baseScore = 20;
-        fanMulti = 0; // 不再翻倍
-        if (state.handTypes.has('tianhu')) huDetails.push('天胡');
-        if (state.handTypes.has('dihu')) huDetails.push('地胡');
-      } else {
-        // 普通胡牌计算番数
-        state.handTypes.forEach(type => {
-          if (handTypeData[type]) {
-            if (type !== 'pihu') { // 平胡已在baseScore=1中
-              huDetails.push(handTypeData[type].name);
-            }
-            // 计算翻倍
-            if (handTypeData[type].fan) {
-              fanMulti *= handTypeData[type].fan;
-            }
+      if (state.bangjin) {
+        for (const p of players) {
+          if (jingScores[p] > 0) {
+            bangjinPlayer = bangjinPlayer === null ? p : null;
+            if (!bangjinPlayer) break;
           }
-        });
-      }
-      
-      // 德国特殊计算
-      let deguoBonus = 0;
-      if (state.specials.has('deguo')) {
-        deguoBonus = 5;
-        huDetails.push('德国');
-        if (state.handTypes.has('zimo')) {
-          fanMulti *= 2;
         }
       }
-      if (state.specials.has('dezhongde')) {
-        deguoBonus = 5;
-        fanMulti *= 4;
-        huDetails.push('德中德');
-      }
       
-      const huScore = baseScore * fanMulti + deguoBonus;
-      
-      // 5. 角色结算
-      let perPersonScore = baseScore * fanMulti + deguoBonus;
-      let payerCount = 3;
-      let roleDetails = [];
-      
-      if (state.role.startsWith('zhuang')) {
-        roleDetails.push('庄家');
-        perPersonScore *= 2;
-        if (state.role === 'zhuang-pao') {
-          roleDetails.push('点炮');
-          payerCount = 1;
-        } else {
-          roleDetails.push('自摸');
+      const finalJingScores = {};
+      players.forEach(p => {
+        let s = jingScores[p];
+        if (s > 0) {
+          s *= chongguanMulti;
+          if (state.bangjin && bangjinPlayer === p) s *= 2;
         }
-      } else if (state.role === 'xian-zimo') {
-        roleDetails.push('闲家自摸');
-        perPersonScore *= 2;
-      } else if (state.role === 'xian-pao') {
-        roleDetails.push('闲家点炮');
-        perPersonScore *= 2;
-        payerCount = 1;
-      } else if (state.role === 'xian-qianggang') {
-        roleDetails.push('抢杠');
-        perPersonScore *= 2;
-      } else if (state.role === 'fangpao') {
-        roleDetails.push('放炮');
-        perPersonScore = -(baseScore * fanMulti + deguoBonus);
-        payerCount = 1;
+        finalJingScores[p] = s;
+      });
+      
+      let chongguanBonus = (chongguanMulti - 1) * Object.values(jingScores).reduce((a,b)=>a+b,0);
+      if (state.bangjin && bangjinPlayer) chongguanBonus += finalJingScores[bangjinPlayer];
+      
+      let gangScore = 0;
+      if (state.specials.has('gang')) gangScore += 6;
+      if (state.specials.has('minggang')) gangScore += 3;
+      if (state.specials.has('gangjin')) gangScore += 30;
+      
+      let baseScore = 0, huMulti = 1;
+      let huPerson = state.zhuang;
+      let isZimo = state.pao === 'none';
+      if (!isZimo) huPerson = state.pao;
+      
+      if (state.huTypes.has('tianhu') || state.huTypes.has('dihu')) {
+        baseScore = 20;
+        huMulti = 0;
+      } else {
+        if (state.huTypes.has('pinghu')) baseScore = 1;
+        if (state.huTypes.has('zimo')) huMulti *= 2;
+        if (state.huTypes.has('qidui') || state.huTypes.has('dqidui')) huMulti *= 2;
+        if (state.huTypes.has('shisanlan')) huMulti *= 2;
+        if (state.huTypes.has('qixing')) huMulti *= 4;
+        if (state.huTypes.has('jingdiao')) huMulti *= 2;
+        if (state.huTypes.has('gangshang')) huMulti *= 2;
+        if (state.specials.has('dezhongde')) huMulti *= 4;
+        else if (state.specials.has('deguo')) huMulti *= 2;
       }
       
-      const finalScore = perPersonScore * payerCount;
+      const huScore = baseScore * huMulti;
+      const results = {};
       
-      // 更新UI
-      resultScore.innerHTML = `${finalScore}<span class="score-unit">子</span>`;
+      players.forEach(p => {
+        let score = 0;
+        score += finalJingScores[p];
+        score += gangScore;
+        
+        if (p === huPerson) {
+          let hp = huScore;
+          if (huPerson === state.zhuang) hp *= 2;
+          if (isZimo) score += hp * 3;
+          else score += hp * 2;
+          if (state.specials.has('deguo') || state.specials.has('dezhongde')) score += 5;
+        } else if (p === state.pao && !isZimo) {
+          let hp = huScore;
+          if (huPerson === state.zhuang) hp *= 2;
+          score -= hp * 2;
+        }
+        
+        results[p] = score;
+      });
       
-      // 详情
-      const allDetails = [...roleDetails, ...huDetails];
-      resultDetail.innerHTML = allDetails.map(d => `<span class="highlight">${d}</span>`).join('');
-      
-      // 分项明细
-      document.getElementById('breakdown-jing').textContent = jingScore;
-      document.getElementById('breakdown-chongguan').textContent = chongguanScore + bangjinScore;
-      document.getElementById('breakdown-gang').textContent = gangScore;
-      document.getElementById('breakdown-fan').textContent = huScore;
-      document.getElementById('breakdown-total').textContent = finalScore;
+      updateResults(results, finalJingScores, chongguanBonus, gangScore, huScore);
     }
     
-    // 精牌按钮
+    function updateResults(results, jingScores, chongguan, gangScore, huScore) {
+      players.forEach(p => {
+        const el = document.getElementById('res-' + p);
+        const s = results[p];
+        el.textContent = (s >= 0 ? '+' : '') + s;
+        el.className = 'score-col ' + (s > 0 ? 'positive' : s < 0 ? 'negative' : '') + (p === state.zhuang ? ' zhuang' : '');
+      });
+      
+      players.forEach(p => {
+        document.getElementById(p + '-badge').style.display = (p === state.zhuang) ? 'inline' : 'none';
+        document.getElementById('res-' + p + '-badge').style.display = (p === state.zhuang) ? 'inline' : 'none';
+      });
+      
+      document.getElementById('detail-jing').textContent = Object.values(jingScores).reduce((a,b)=>a+b,0);
+      document.getElementById('detail-chongguan').textContent = chongguan;
+      document.getElementById('detail-gang').textContent = gangScore;
+      document.getElementById('detail-hu').textContent = huScore;
+    }
+    
     document.querySelectorAll('.jing-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const type = btn.dataset.type;
-        const dir = parseInt(btn.dataset.dir);
-        
-        if (type === 'zheng') {
-          state.zheng = Math.max(0, Math.min(4, state.zheng + dir));
-          zhengNum.textContent = state.zheng;
-        } else {
-          state.fu = Math.max(0, Math.min(4, state.fu + dir));
-          fuNum.textContent = state.fu;
-        }
+        const p = btn.dataset.player, t = btn.dataset.type, d = parseInt(btn.dataset.dir);
+        state.players[p][t] = Math.max(0, Math.min(4, state.players[p][t] + d));
+        document.getElementById(p + '-' + t).textContent = state.players[p][t];
         calculate();
       });
     });
     
-    // 角色选择
-    document.querySelectorAll('.role-btn').forEach(btn => {
+    document.querySelectorAll('.zhuang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.zhuang-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        state.role = btn.dataset.role;
+        state.zhuang = btn.dataset.zhuang;
         calculate();
       });
     });
     
-    // 牌型选择
-    document.querySelectorAll('.hand-type').forEach(el => {
-      el.addEventListener('click', () => {
-        const type = el.dataset.type;
-        
-        // 平胡不能取消
-        if (type === 'pihu') return;
-        
-        if (state.handTypes.has(type)) {
-          state.handTypes.delete(type);
-          el.classList.remove('active');
-        } else {
-          state.handTypes.add(type);
-          el.classList.add('active');
-        }
+    document.querySelectorAll('.pao-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.pao = btn.dataset.pao;
         calculate();
       });
     });
     
-    // 特殊选项
+    document.querySelectorAll('.hu-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.type;
+        state.huTypes.has(t) ? state.huTypes.delete(t) : state.huTypes.add(t);
+        btn.classList.toggle('active');
+        calculate();
+      });
+    });
+    
     document.querySelectorAll('.special-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const special = btn.dataset.special;
-        
-        if (state.specials.has(special)) {
-          state.specials.delete(special);
-          btn.classList.remove('active');
-        } else {
-          state.specials.add(special);
-          btn.classList.add('active');
-        }
+        const s = btn.dataset.special;
+        state.specials.has(s) ? state.specials.delete(s) : state.specials.add(s);
+        btn.classList.toggle('active');
         calculate();
       });
     });
     
-    // 重置
-    document.getElementById('btn-reset').addEventListener('click', () => {
-      state = {
-        role: 'zhuang-zimo',
-        zheng: 0,
-        fu: 0,
-        handTypes: new Set(['pihu']),
-        specials: new Set()
-      };
-      
-      zhengNum.textContent = 0;
-      fuNum.textContent = 0;
-      
-      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.role-btn[data-role="zhuang-zimo"]').classList.add('active');
-      
-      document.querySelectorAll('.hand-type').forEach(el => {
-        el.classList.toggle('active', el.dataset.type === 'pihu');
-      });
-      
-      document.querySelectorAll('.special-btn').forEach(el => el.classList.remove('active'));
-      
+    document.getElementById('bangjin').addEventListener('change', e => {
+      state.bangjin = e.target.checked;
       calculate();
     });
     
-    // 复制战绩
-    document.getElementById('btn-share').addEventListener('click', async () => {
-      const score = document.getElementById('result-score').textContent;
-      const jing = document.getElementById('breakdown-jing').textContent;
-      const gang = document.getElementById('breakdown-gang').textContent;
-      const hu = document.getElementById('breakdown-fan').textContent;
-      const detail = Array.from(document.querySelectorAll('#result-detail span')).map(s => s.textContent).join(' ');
-      
-      const text = `🀄 南昌麻将记分
-得分：${score}
-├ 精牌分：${jing}
-├ 杠牌分：${gang}
-└ 胡牌分：${hu}
-${detail}`;
-      
-      try {
-        await navigator.clipboard.writeText(text);
-        showToast('已复制到剪贴板');
-      } catch (err) {
-        showToast('复制失败，请重试');
-      }
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      state = {
+        zhuang: 'nan', pao: 'none', huTypes: new Set(), specials: new Set(), bangjin: false,
+        players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
+      };
+      players.forEach(p => {
+        document.getElementById(p + '-zheng').textContent = 0;
+        document.getElementById(p + '-fu').textContent = 0;
+      });
+      document.querySelectorAll('.zhuang-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.zhuang-btn[data-zhuang="nan"]').classList.add('active');
+      document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.pao-btn[data-pao="none"]').classList.add('active');
+      document.querySelectorAll('.hu-btn, .special-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('bangjin').checked = false;
+      calculate();
     });
     
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+    document.getElementById('btn-share').addEventListener('click', async () => {
+      const lines = ['🀄 南昌麻将结算', '----------------'];
+      players.forEach(p => {
+        const s = document.getElementById('res-' + p).textContent;
+        const z = p === state.zhuang ? ' [庄]' : '';
+        lines.push(`${p === 'dong' ? '东' : p === 'nan' ? '南' : p === 'xi' ? '西' : '北'}家${z}: ${s}`);
+      });
+      lines.push('----------------');
+      lines.push(`精:${document.getElementById('detail-jing').textContent} 冲关:${document.getElementById('detail-chongguan').textContent} 杠:${document.getElementById('detail-gang').textContent} 胡:${document.getElementById('detail-hu').textContent}`);
+      
+      try {
+        await navigator.clipboard.writeText(lines.join('\n'));
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      } catch(e) {}
+    });
     
-    // 初始化
     calculate();
   </script>
 </body>
