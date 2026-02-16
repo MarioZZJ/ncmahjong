@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>南昌麻将记分器</title>
+  <meta name="theme-color" content="#1a73e8">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --accent: #ff6b6b;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --text: #333333;
+      --text-light: #666666;
+      --border: #e0e0e0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, #4facfe 100%);
+      color: white;
+      padding: 24px 20px;
+      text-align: center;
+      border-radius: 0 0 24px 24px;
+      box-shadow: 0 4px 20px rgba(26, 115, 232, 0.3);
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .container {
+      padding: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .card-title::before {
+      content: "";
+      width: 4px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+    
+    /* 玩家身份选择 */
+    .role-selector {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .role-btn {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .role-btn.active {
+      border-color: var(--primary);
+      background: rgba(26, 115, 232, 0.08);
+      color: var(--primary);
+    }
+    
+    /* 赖子选择 */
+    .laizi-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+    }
+    
+    .laizi-label {
+      font-size: 15px;
+    }
+    
+    .laizi-count {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .laizi-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: white;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .laizi-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .laizi-num {
+      font-size: 22px;
+      font-weight: 700;
+      min-width: 30px;
+      text-align: center;
+      color: var(--primary);
+    }
+    
+    /* 牌型多选 */
+    .hand-types {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    
+    .hand-type {
+      padding: 12px 14px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .hand-type.active {
+      border-color: var(--primary);
+      background: rgba(26, 115, 232, 0.08);
+    }
+    
+    .hand-type .name {
+      font-weight: 500;
+    }
+    
+    .hand-type .fan {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    
+    .hand-type.active .fan {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    /* 结果显示 */
+    .result-card {
+      background: linear-gradient(135deg, var(--primary) 0%, #4facfe 100%);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    
+    .result-card .label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+    
+    .result-card .score {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    
+    .result-card .detail {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    
+    .result-card .detail span {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin: 4px;
+    }
+    
+    /* 底部分享栏 */
+    .action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 16px 20px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-reset {
+      background: var(--bg);
+      color: var(--text);
+    }
+    
+    .btn-share {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn:active {
+      transform: scale(0.97);
+    }
+    
+    /* 弹窗提示 */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: transform 0.3s;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    @media (min-width: 500px) {
+      .container {
+        padding-top: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🀄 南昌麻将记分器</h1>
+    <p>输入牌型，自动计算番数与分数</p>
+  </div>
+  
+  <div class="container">
+    <!-- 玩家身份 -->
+    <div class="card">
+      <div class="card-title">玩家身份</div>
+      <div class="role-selector">
+        <button class="role-btn active" data-role="zhuang">🔸 庄家</button>
+        <button class="role-btn" data-role="xian">🔹 闲家</button>
+      </div>
+    </div>
+    
+    <!-- 赖子数量 -->
+    <div class="card">
+      <div class="card-title">赖子数量</div>
+      <div class="laizi-row">
+        <span class="laizi-label">硬赖子（财神）</span>
+        <div class="laizi-count">
+          <button class="laizi-btn" id="laizi-minus">−</button>
+          <span class="laizi-num" id="laizi-num">0</span>
+          <button class="laizi-btn" id="laizi-plus">+</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 牌型选择 -->
+    <div class="card">
+      <div class="card-title">胡牌牌型（可多选）</div>
+      <div class="hand-types">
+        <div class="hand-type" data-type="pihu" data-fan="1">
+          <span class="name">屁胡</span>
+          <span class="fan">1番</span>
+        </div>
+        <div class="hand-type" data-type="menqianqing" data-fan="1">
+          <span class="name">门前清</span>
+          <span class="fan">1番</span>
+        </div>
+        <div class="hand-type" data-type="pengpenghu" data-fan="2">
+          <span class="name">碰碰胡</span>
+          <span class="fan">2番</span>
+        </div>
+        <div class="hand-type" data-type="hunyise" data-fan="3">
+          <span class="name">混一色</span>
+          <span class="fan">3番</span>
+        </div>
+        <div class="hand-type" data-type="qingyise" data-fan="4">
+          <span class="name">清一色</span>
+          <span class="fan">4番</span>
+        </div>
+        <div class="hand-type" data-type="qidui" data-fan="3">
+          <span class="name">七对</span>
+          <span class="fan">3番</span>
+        </div>
+        <div class="hand-type" data-type="haohuaqidui" data-fan="4">
+          <span class="name">豪华七对</span>
+          <span class="fan">4番</span>
+        </div>
+        <div class="hand-type" data-type="hailao" data-fan="2">
+          <span class="name">海底捞月</span>
+          <span class="fan">2番</span>
+        </div>
+        <div class="hand-type" data-type="gangshanghua" data-fan="2">
+          <span class="name">杠上开花</span>
+          <span class="fan">2番</span>
+        </div>
+        <div class="hand-type" data-type="qiangganghu" data-fan="2">
+          <span class="name">抢杠胡</span>
+          <span class="fan">2番</span>
+        </div>
+        <div class="hand-type" data-type="quanqiuren" data-fan="2">
+          <span class="name">全求人</span>
+          <span class="fan">2番</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 计算结果 -->
+    <div class="card result-card">
+      <div class="label">当前得分</div>
+      <div class="score" id="result-score">2</div>
+      <div class="detail" id="result-detail">
+        <span>1番</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部操作栏 -->
+  <div class="action-bar">
+    <button class="btn btn-reset" id="btn-reset">重置</button>
+    <button class="btn btn-share" id="btn-share">复制战绩</button>
+  </div>
+  
+  <!-- Toast -->
+  <div class="toast" id="toast">已复制到剪贴板</div>
+  
+  <script>
+    // 状态
+    let state = {
+      role: 'zhuang',  // zhuang | xian
+      laizi: 0,
+      handTypes: new Set(['pihu'])  // 屁胡默认选中
+    };
+    
+    // 牌型定义
+    const handTypeData = {
+      pihu: { name: '屁胡', fan: 1 },
+      menqianqing: { name: '门前清', fan: 1 },
+      pengpenghu: { name: '碰碰胡', fan: 2 },
+      hunyise: { name: '混一色', fan: 3 },
+      qingyise: { name: '清一色', fan: 4 },
+      qidui: { name: '七对', fan: 3 },
+      haohuaqidui: { name: '豪华七对', fan: 4 },
+      hailao: { name: '海底捞月', fan: 2 },
+      gangshanghua: { name: '杠上开花', fan: 2 },
+      qiangganghu: { name: '抢杠胡', fan: 2 },
+      quanqiuren: { name: '全求人', fan: 2 }
+    };
+    
+    // DOM 元素
+    const laiziNum = document.getElementById('laizi-num');
+    const laiziMinus = document.getElementById('laizi-minus');
+    const laiziPlus = document.getElementById('laizi-plus');
+    const resultScore = document.getElementById('result-score');
+    const resultDetail = document.getElementById('result-detail');
+    const toast = document.getElementById('toast');
+    
+    // 计算分数
+    function calculate() {
+      // 计算总番数
+      let totalFan = 0;
+      const selectedTypes = [];
+      
+      state.handTypes.forEach(type => {
+        totalFan += handTypeData[type].fan;
+        selectedTypes.push(handTypeData[type].name);
+      });
+      
+      // 赖子番数
+      totalFan += state.laizi;
+      
+      // 庄家番数
+      if (state.role === 'zhuang') {
+        totalFan += 1;
+        selectedTypes.push('庄家');
+      }
+      
+      // 计算分数：2^(番数-1)，最低1番=1分
+      const baseScore = totalFan >= 1 ? Math.pow(2, totalFan - 1) : 1;
+      
+      // 庄家胡牌×2
+      const finalScore = state.role === 'zhuang' ? baseScore * 2 : baseScore;
+      
+      // 更新UI
+      resultScore.textContent = finalScore;
+      
+      // 构建详情
+      const detailParts = [];
+      if (totalFan > 0) {
+        detailParts.push(`${totalFan}番`);
+      }
+      if (state.laizi > 0) {
+        detailParts.push(`${state.laizi}赖`);
+      }
+      if (state.role === 'zhuang') {
+        detailParts.push('庄家');
+      }
+      resultDetail.innerHTML = detailParts.length > 0 
+        ? detailParts.map(d => `<span>${d}</span>`).join('')
+        : '<span>0番</span>';
+    }
+    
+    // 角色选择
+    document.querySelectorAll('.role-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.role = btn.dataset.role;
+        calculate();
+      });
+    });
+    
+    // 赖子按钮
+    laiziMinus.addEventListener('click', () => {
+      if (state.laizi > 0) {
+        state.laizi--;
+        laiziNum.textContent = state.laizi;
+        calculate();
+      }
+    });
+    
+    laiziPlus.addEventListener('click', () => {
+      if (state.laizi < 4) {
+        state.laizi++;
+        laiziNum.textContent = state.laizi;
+        calculate();
+      }
+    });
+    
+    // 牌型选择
+    document.querySelectorAll('.hand-type').forEach(el => {
+      el.addEventListener('click', () => {
+        const type = el.dataset.type;
+        
+        // 屁胡不能取消
+        if (type === 'pihu') return;
+        
+        if (state.handTypes.has(type)) {
+          state.handTypes.delete(type);
+          el.classList.remove('active');
+        } else {
+          state.handTypes.add(type);
+          el.classList.add('active');
+        }
+        calculate();
+      });
+    });
+    
+    // 重置
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      state.laizi = 0;
+      state.handTypes = new Set(['pihu']);
+      state.role = 'zhuang';
+      
+      laiziNum.textContent = 0;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.role-btn[data-role="zhuang"]').classList.add('active');
+      document.querySelectorAll('.hand-type').forEach(el => {
+        el.classList.toggle('active', el.dataset.type === 'pihu');
+      });
+      
+      calculate();
+    });
+    
+    // 复制战绩
+    document.getElementById('btn-share').addEventListener('click', async () => {
+      const score = resultScore.textContent;
+      const detail = Array.from(document.querySelectorAll('#result-detail span')).map(s => s.textContent).join(' ');
+      const text = `🀄 南昌麻将记分\n得分：${score}分\n${detail}`;
+      
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('已复制到剪贴板');
+      } catch (err) {
+        showToast('复制失败，请重试');
+      }
+    });
+    
+    // 显示Toast
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+    
+    // 初始化
+    calculate();
+  </script>
+</body>
+</html>
