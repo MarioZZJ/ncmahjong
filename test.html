@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>南昌麻将计分器 - 自动化测试</title></head>
+<body>
+<h1>南昌麻将计分器 自动化测试</h1>
+<pre id="output"></pre>
+<script>
+// 复制计算引擎（与 index.html 同步）
+const players = ['dong', 'nan', 'xi', 'bei'];
+
+function calc(config) {
+  const state = {
+    zhuang: config.zhuang || 'nan',
+    hu: config.hu || 'nan',
+    pao: config.pao || 'none',
+    huTypes: new Set(config.huTypes || []),
+    players: {
+      dong: { zheng: 0, fu: 0, minggang: 0, angang: 0, ...(config.dong || {}) },
+      nan:  { zheng: 0, fu: 0, minggang: 0, angang: 0, ...(config.nan || {}) },
+      xi:   { zheng: 0, fu: 0, minggang: 0, angang: 0, ...(config.xi || {}) },
+      bei:  { zheng: 0, fu: 0, minggang: 0, angang: 0, ...(config.bei || {}) }
+    }
+  };
+
+  const results = {};
+  players.forEach(p => results[p] = 0);
+
+  const winner = state.hu;
+  const dealer = state.zhuang;
+  const isZimo = state.pao === 'none';
+  const paoPlayer = state.pao;
+
+  // 1. 精牌分
+  const jingBase = {};
+  let totalJingBase = 0;
+  const playersWithJing = [];
+  players.forEach(p => {
+    jingBase[p] = state.players[p].zheng * 2 + state.players[p].fu;
+    totalJingBase += jingBase[p];
+    if (jingBase[p] > 0) playersWithJing.push(p);
+  });
+  const isBawang = playersWithJing.length === 1;
+  const chongguanMulti = totalJingBase >= 5 ? (totalJingBase - 3) : 1;
+  const jingScore = {};
+  players.forEach(p => {
+    jingScore[p] = jingBase[p];
+    if (jingScore[p] > 0) {
+      jingScore[p] *= chongguanMulti;
+      if (isBawang) jingScore[p] *= 2;
+    }
+  });
+  const totalJingScore = players.reduce((s, p) => s + jingScore[p], 0);
+  players.forEach(p => {
+    results[p] += 4 * jingScore[p] - totalJingScore;
+  });
+
+  // 2. 杠分
+  players.forEach(p => {
+    const myGangPer = state.players[p].minggang * 1 + state.players[p].angang * 2;
+    results[p] += myGangPer * 3;
+    players.forEach(q => {
+      if (q !== p) {
+        results[p] -= state.players[q].minggang * 1 + state.players[q].angang * 2;
+      }
+    });
+  });
+  if (state.huTypes.has('gangjin')) {
+    results[winner] += 30;
+    players.forEach(p => { if (p !== winner) results[p] -= 10; });
+  }
+
+  // 3. 胡牌分
+  const hasTianhu = state.huTypes.has('tianhu');
+  const hasDihu = state.huTypes.has('dihu');
+  const hasDeguo = state.huTypes.has('deguo');
+  const hasJingdiao = state.huTypes.has('jingdiao');
+  const hasQidui = state.huTypes.has('qidui');
+  const hasDqidui = state.huTypes.has('dqidui');
+  const hasShisanlan = state.huTypes.has('shisanlan');
+  const hasQixing = state.huTypes.has('qixing');
+  const hasGangshang = state.huTypes.has('gangshang');
+  const hasQianggang = state.huTypes.has('qianggang');
+
+  if (hasTianhu || hasDihu) {
+    let fixedPer = 20;
+    if (hasJingdiao) fixedPer = 40;
+    players.forEach(p => {
+      if (p !== winner) {
+        results[p] -= fixedPer;
+        results[winner] += fixedPer;
+      }
+    });
+  } else {
+    let typeMult = 1;
+    if (isZimo) typeMult *= 2;
+    if (hasQixing && (hasQidui || hasDqidui)) {
+      typeMult *= 4;
+    } else if (hasQixing && hasShisanlan) {
+      typeMult *= 4;
+    } else {
+      if (hasQidui) typeMult *= 2;
+      if (hasDqidui) typeMult *= 2;
+      if (hasShisanlan) typeMult *= 2;
+      if (hasQixing) typeMult *= 4;
+    }
+    if (hasJingdiao) typeMult *= 2;
+    if (hasGangshang) typeMult *= 2;
+    if (hasQianggang) typeMult *= 2;
+    if (hasDeguo) typeMult *= 2;
+
+    const huScore = typeMult;
+
+    if (isZimo) {
+      players.forEach(p => {
+        if (p === winner) return;
+        let amount = huScore;
+        if (p === dealer || winner === dealer) amount *= 2;
+        if (hasDeguo) amount += 5;
+        results[p] -= amount;
+        results[winner] += amount;
+      });
+    } else if (hasDeguo) {
+      players.forEach(p => {
+        if (p === winner) return;
+        let amount = huScore;
+        if (p === paoPlayer) amount *= 2;
+        if (p === dealer || winner === dealer) amount *= 2;
+        if (p === paoPlayer) amount += 5;
+        results[p] -= amount;
+        results[winner] += amount;
+      });
+    } else {
+      if (paoPlayer && paoPlayer !== 'none') {
+        let amount = huScore * 2;
+        if (paoPlayer === dealer || winner === dealer) amount *= 2;
+        results[paoPlayer] -= amount;
+        results[winner] += amount;
+      }
+    }
+  }
+
+  return results;
+}
+
+// === 测试用例 ===
+const tests = [
+  // ---- 精牌分测试 ----
+  {
+    name: "精牌：单家1副精",
+    config: { dong: { fu: 1 } },
+    expected: { dong: 3, nan: -1, xi: -1, bei: -1 }
+  },
+  {
+    name: "精牌：单家1正精（霸王精）",
+    config: { dong: { zheng: 1 } },
+    // base=2, 霸王×2=4, 每家付4, 东收12
+    expected: { dong: 12, nan: -4, xi: -4, bei: -4 }
+  },
+  {
+    name: "精牌：两家各1副精",
+    config: { dong: { fu: 1 }, nan: { fu: 1 } },
+    // 东base=1, 南base=1, total=2, no冲关no霸王
+    // 东 net = 4*1-2 = 2, 南 net = 4*1-2 = 2, 西 = 0-2 = -2, 北 = 0-2 = -2
+    expected: { dong: 2, nan: 2, xi: -2, bei: -2 }
+  },
+  {
+    name: "精牌：三家有精",
+    config: { dong: { fu: 1 }, nan: { fu: 2 }, xi: { zheng: 1 } },
+    // 东base=1, 南base=2, 西base=2, total=5, 冲关×2
+    // 东score=1*2=2, 南score=2*2=4, 西score=2*2=4, total=10
+    // 东 net = 4*2-10 = -2, 南 net = 4*4-10 = 6, 西 net = 4*4-10 = 6, 北 = 0-10 = -10
+    expected: { dong: -2, nan: 6, xi: 6, bei: -10 }
+  },
+  {
+    name: "精牌：霸王精+冲关（1家3正精=6子）",
+    config: { dong: { zheng: 3 } },
+    // base=6, total=6, 冲关×3, 霸王×2, score=6*3*2=36
+    // 东 = 4*36-36 = 108, 其他各-36
+    expected: { dong: 108, nan: -36, xi: -36, bei: -36 }
+  },
+
+  // ---- 胡牌分测试：自摸 ----
+  {
+    name: "屁胡自摸：闲家自摸，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'none' },
+    // typeMult = 2(自摸), huScore=2
+    // 南(庄)付: 2*2=4, 西付2, 北付2, 东收8
+    expected: { dong: 8, nan: -4, xi: -2, bei: -2 }
+  },
+  {
+    name: "屁胡自摸：庄家自摸",
+    config: { hu: 'nan', zhuang: 'nan', pao: 'none' },
+    // typeMult=2, huScore=2
+    // 东付2*2=4, 西付4, 北付4, 南收12
+    expected: { dong: -4, nan: 12, xi: -4, bei: -4 }
+  },
+  {
+    name: "小七对自摸：闲家，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'none', huTypes: ['qidui'] },
+    // typeMult = 2(自摸) * 2(七对) = 4
+    // 南(庄)付 4*2=8, 西付4, 北付4, 东收16
+    expected: { dong: 16, nan: -8, xi: -4, bei: -4 }
+  },
+  {
+    name: "精钓自摸：闲家，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'none', huTypes: ['jingdiao'] },
+    // typeMult = 2(自摸) * 2(精钓) = 4
+    // 南(庄)付8, 西付4, 北付4, 东收16
+    expected: { dong: 16, nan: -8, xi: -4, bei: -4 }
+  },
+
+  // ---- 胡牌分测试：点炮 ----
+  {
+    name: "屁胡点炮：闲东胡，闲西点炮，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'xi' },
+    // typeMult=1 (no自摸), huScore=1, 点炮×2 = 2
+    // 无庄家修饰（东非庄，西非庄）
+    expected: { dong: 2, nan: 0, xi: -2, bei: 0 }
+  },
+  {
+    name: "屁胡点炮：闲东胡，庄南点炮",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'nan' },
+    // huScore=1, 点炮×2=2, 庄×2=4
+    expected: { dong: 4, nan: -4, xi: 0, bei: 0 }
+  },
+  {
+    name: "屁胡点炮：庄南胡，闲东点炮",
+    config: { hu: 'nan', zhuang: 'nan', pao: 'dong' },
+    // huScore=1, 点炮×2=2, 庄×2=4
+    expected: { dong: -4, nan: 4, xi: 0, bei: 0 }
+  },
+  {
+    name: "小七对点炮：闲东胡，闲西点炮，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'xi', huTypes: ['qidui'] },
+    // typeMult=2(七对), huScore=2, 点炮×2=4
+    expected: { dong: 4, nan: 0, xi: -4, bei: 0 }
+  },
+
+  // ---- 德国测试 ----
+  {
+    name: "德国自摸：闲东胡，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'none', huTypes: ['deguo'] },
+    // typeMult = 2(自摸) * 2(德国) = 4
+    // 南(庄)付 4*2+5=13, 西付4+5=9, 北付4+5=9, 东收31
+    expected: { dong: 31, nan: -13, xi: -9, bei: -9 }
+  },
+  {
+    name: "德国自摸：庄南自摸",
+    config: { hu: 'nan', zhuang: 'nan', pao: 'none', huTypes: ['deguo'] },
+    // typeMult=4, 每家(非庄)付 4*2+5=13, 南收39
+    expected: { dong: -13, nan: 39, xi: -13, bei: -13 }
+  },
+  {
+    name: "德国点炮：闲东胡，闲西点炮，庄南",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'xi', huTypes: ['deguo'] },
+    // typeMult = 2(德国), huScore=2
+    // 西(点炮,非庄): 2*2(点炮) + 5 = 9
+    // 南(庄,旁观): 2*2(庄) = 4
+    // 北(旁观,非庄): 2
+    // 东收 9+4+2 = 15
+    expected: { dong: 15, nan: -4, xi: -9, bei: -2 }
+  },
+  {
+    name: "德国点炮：闲东胡，庄南点炮",
+    config: { hu: 'dong', zhuang: 'nan', pao: 'nan', huTypes: ['deguo'] },
+    // typeMult=2, huScore=2
+    // 南(点炮+庄): 2*2(点炮)*2(庄)+5 = 13
+    // 西(旁观,非庄): 2
+    // 北(旁观,非庄): 2
+    // 东收 13+2+2 = 17
+    expected: { dong: 17, nan: -13, xi: -2, bei: -2 }
+  },
+
+  // ---- 天胡地胡 ----
+  {
+    name: "天胡：庄南天胡",
+    config: { hu: 'nan', zhuang: 'nan', huTypes: ['tianhu'] },
+    // 每家付20
+    expected: { dong: -20, nan: 60, xi: -20, bei: -20 }
+  },
+  {
+    name: "精钓天胡：庄南",
+    config: { hu: 'nan', zhuang: 'nan', huTypes: ['tianhu', 'jingdiao'] },
+    expected: { dong: -40, nan: 120, xi: -40, bei: -40 }
+  },
+  {
+    name: "地胡：闲东胡",
+    config: { hu: 'dong', zhuang: 'nan', huTypes: ['dihu'] },
+    expected: { dong: 60, nan: -20, xi: -20, bei: -20 }
+  },
+
+  // ---- 杠分测试 ----
+  {
+    name: "杠牌：东1暗杠",
+    config: { dong: { angang: 1 } },
+    // 东收2*3=6, 其他各付2
+    expected: { dong: 6, nan: -2, xi: -2, bei: -2 }
+  },
+  {
+    name: "杠牌：东1明杠",
+    config: { dong: { minggang: 1 } },
+    expected: { dong: 3, nan: -1, xi: -1, bei: -1 }
+  },
+  {
+    name: "杠牌：东1暗杠+南1明杠",
+    config: { dong: { angang: 1 }, nan: { minggang: 1 } },
+    // 东：income=2*3=6, expense=1(付南), net=5
+    // 南：income=1*3=3, expense=2(付东), net=1
+    // 西：expense=2+1=3, net=-3
+    // 北：expense=2+1=3, net=-3
+    expected: { dong: 5, nan: 1, xi: -3, bei: -3 }
+  },
+  {
+    name: "杠精：东胡+杠精",
+    config: { hu: 'dong', huTypes: ['gangjin'] },
+    // 东+30, 其他各-10 (加上默认自摸屁胡分)
+    // 屁胡自摸: typeMult=2, 南(庄)付4, 西付2, 北付2, 东收8
+    // 杠精: 东+30, 南-10, 西-10, 北-10
+    expected: { dong: 38, nan: -14, xi: -12, bei: -12 }
+  },
+
+  // ---- 综合测试 ----
+  {
+    name: "综合：东有2正精，南庄自摸七对，西1暗杠",
+    config: {
+      zhuang: 'nan', hu: 'nan', pao: 'none',
+      dong: { zheng: 2 }, xi: { angang: 1 },
+      huTypes: ['qidui']
+    },
+    // 精牌: 东base=4, 只东有精→霸王, total=4 <5 no冲关
+    // 东score=4*2=8, total=8
+    // 东 net=4*8-8=24, 南=-8, 西=-8, 北=-8
+    // 杠: 西收2*3=6, 东付2, 南付2, 北付2; 西net=4, 东net=-2, 南net=-2, 北net=-2
+    // Correction: 西收6, others each pay 2: 东=-2,南=-2,北=-2
+    // 胡牌: 南自摸七对, typeMult=2*2=4
+    // 东付4*2(庄)=8, 西付4*2(庄)=8, 北付4*2(庄)=8, 南收24
+    // Wait, 南 IS 庄. So for each payer, winner=dealer → ×2
+    // 东付4*2=8, 西付4*2=8, 北付4*2=8, 南收24
+    // Total: 东=24-2-8=14, 南=-8-2+24=14, 西=-8+4-8=-12, 北=-8-2-8=-18
+    // Hmm let me recalculate carefully
+    // 精: 东=24, 南=-8, 西=-8, 北=-8
+    // 杠(西1暗杠): 西收6, 东付2, 南付2, 北付2 → 东=-2, 南=-2, 西=+6, 北=-2
+    // 胡(南庄自摸七对): typeMult=2(自摸)*2(七对)=4, each payer pays 4*2(庄)=8
+    // 东付8, 西付8, 北付8, 南收24
+    // 精+杠+胡:
+    // 东 = 24 + (-2) + (-8) = 14
+    // 南 = -8 + (-2) + 24 = 14
+    // 西 = -8 + 6 + (-8) = -10
+    // 北 = -8 + (-2) + (-8) = -18
+    expected: { dong: 14, nan: 14, xi: -10, bei: -18 }
+  },
+  {
+    name: "综合：德国七对自摸，庄家胡，北2副精",
+    config: {
+      zhuang: 'dong', hu: 'dong', pao: 'none',
+      bei: { fu: 2 },
+      huTypes: ['deguo', 'qidui']
+    },
+    // 精: 北base=2, 只北有精→霸王, total=2<5
+    // 北score=2*2=4, total=4
+    // 东=4*0-4=-4, 南=-4, 西=-4, 北=4*4-4=12
+    // 胡: typeMult=2(自摸)*2(德国)*2(七对)=8
+    // 东是庄+胡者, 每个payer pays 8*2(庄)+5=21
+    // 南付21, 西付21, 北付21, 东收63
+    // Total:
+    // 东 = -4 + 63 = 59
+    // 南 = -4 + (-21) = -25
+    // 西 = -4 + (-21) = -25
+    // 北 = 12 + (-21) = -9
+    expected: { dong: 59, nan: -25, xi: -25, bei: -9 }
+  }
+];
+
+// 运行测试
+let passed = 0, failed = 0;
+let output = '';
+
+tests.forEach((t, i) => {
+  const result = calc(t.config);
+  const total = players.reduce((s, p) => s + result[p], 0);
+
+  let ok = total === 0;
+  let mismatch = [];
+  players.forEach(p => {
+    if (result[p] !== t.expected[p]) {
+      mismatch.push(`${p}: got ${result[p]}, expected ${t.expected[p]}`);
+      ok = false;
+    }
+  });
+
+  if (ok) {
+    passed++;
+    output += `✓ [${i+1}] ${t.name}\n`;
+    output += `  东=${result.dong} 南=${result.nan} 西=${result.xi} 北=${result.bei} (sum=${total})\n`;
+  } else {
+    failed++;
+    output += `✗ [${i+1}] ${t.name}\n`;
+    output += `  Got:  东=${result.dong} 南=${result.nan} 西=${result.xi} 北=${result.bei} (sum=${total})\n`;
+    output += `  Want: 东=${t.expected.dong} 南=${t.expected.nan} 西=${t.expected.xi} 北=${t.expected.bei}\n`;
+    if (mismatch.length) output += `  Diff: ${mismatch.join(', ')}\n`;
+  }
+});
+
+output = `=== 测试结果: ${passed} passed, ${failed} failed, ${tests.length} total ===\n\n` + output;
+document.getElementById('output').textContent = output;
+console.log(output);
+</script>
+</body>
+</html>
