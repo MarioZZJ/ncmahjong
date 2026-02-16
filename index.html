@@ -4,251 +4,258 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>南昌麻将记分器</title>
-  <meta name="theme-color" content="#1b4332">
+  <meta name="theme-color" content="#b91c1c">
   <link rel="manifest" href="manifest.json">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --felt: #1b4332;
-      --felt-surface: #234f3e;
-      --felt-deep: #132e22;
-      --wood: #3d2b1f;
-      --wood-mid: #5c4033;
-      --cream: #f2ead3;
-      --cream-soft: #d5cbaf;
-      --cream-mute: #a89e84;
-      --gold: #c9a84c;
-      --red: #c44536;
-      --red-soft: #d66b5e;
-      --win: #6abf69;
-      --divider: rgba(242,234,211,0.1);
+      --red: #b91c1c;
+      --red-deep: #991b1b;
+      --red-light: #dc2626;
+      --gold: #f59e0b;
+      --gold-soft: #fbbf24;
+      --gold-dim: #d97706;
+      --tile: #fef9ef;
+      --tile-shadow: #e8dcc6;
+      --text-dark: #44403c;
+      --text-mid: #78716c;
+      --text-light: #a8a29e;
+      --bg: #fdf6ee;
+      --card-bg: #fff9f0;
+      --divider: rgba(0,0,0,0.06);
+      --win: #16a34a;
+      --lose: #dc2626;
       touch-action: manipulation;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--felt);
-      color: var(--cream);
+      background: var(--bg);
+      color: var(--text-dark);
       min-height: 100vh;
-      padding-bottom: 100px;
+      padding-bottom: 110px;
     }
 
     .header {
-      background: var(--wood);
-      color: var(--cream);
-      padding: 16px 20px;
+      background: var(--red);
+      color: var(--gold-soft);
+      padding: 18px 20px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      box-shadow: 0 2px 8px rgba(185,28,28,0.3);
     }
 
-    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 6px; }
+    .header h1 { font-size: 24px; font-weight: 800; letter-spacing: 6px; }
 
-    .container { padding: 14px; max-width: 600px; margin: 0 auto; }
+    .container { padding: 12px; max-width: 600px; margin: 0 auto; }
 
     .card {
-      background: var(--felt-surface);
-      border: 1px solid rgba(242,234,211,0.08);
-      border-radius: 10px;
-      padding: 14px;
+      background: var(--card-bg);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 14px;
+      padding: 16px;
       margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
     .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--cream-soft);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--red);
       margin-bottom: 12px;
-      letter-spacing: 1px;
     }
 
-    .players-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .players-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
     .player-card {
-      background: rgba(0,0,0,0.15);
-      border: 1px solid var(--divider);
-      border-radius: 8px;
-      padding: 10px;
+      background: var(--tile);
+      border: 1.5px solid var(--tile-shadow);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
 
     .player-name {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: var(--cream);
+      color: var(--text-dark);
     }
 
     .player-name .badge {
-      font-size: 10px;
-      padding: 1px 7px;
+      font-size: 11px;
+      padding: 2px 8px;
       border-radius: 8px;
       background: var(--red);
       color: #fff;
       font-weight: 700;
     }
 
-    .jing-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .jing-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .jing-input-row:last-child { margin-bottom: 0; }
-    .jing-label { font-size: 12px; color: var(--cream-mute); }
-    .jing-controls { display: flex; align-items: center; gap: 4px; }
+    .jing-label { font-size: 14px; color: var(--text-mid); }
+    .jing-controls { display: flex; align-items: center; gap: 6px; }
 
     .jing-btn {
-      width: 30px;
-      height: 28px;
-      border-radius: 5px;
-      border: none;
-      background: var(--cream);
-      color: var(--wood);
-      font-size: 15px;
+      width: 34px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1.5px solid var(--tile-shadow);
+      background: #fff;
+      color: var(--text-dark);
+      font-size: 18px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    .jing-btn:active { background: var(--gold); }
-    .jing-val { width: 26px; text-align: center; font-size: 15px; font-weight: 700; color: var(--gold); }
+    .jing-btn:active { background: var(--gold-soft); border-color: var(--gold); }
+    .jing-val { width: 28px; text-align: center; font-size: 18px; font-weight: 800; color: var(--red); }
 
-    .zhuang-selector, .pao-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+    .zhuang-selector, .pao-selector { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .zhuang-btn, .pao-btn {
       flex: 1;
       min-width: 65px;
-      padding: 9px 6px;
-      border: 1px solid var(--divider);
-      border-radius: 6px;
-      background: rgba(0,0,0,0.12);
-      color: var(--cream-mute);
-      font-size: 13px;
+      padding: 10px 8px;
+      border: 1.5px solid var(--divider);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text-light);
+      font-size: 15px;
+      font-weight: 500;
       cursor: pointer;
       text-align: center;
     }
 
     .zhuang-btn.active {
       border-color: var(--gold);
-      background: rgba(201,168,76,0.15);
-      color: var(--gold);
-      font-weight: 600;
+      background: #fffbeb;
+      color: var(--gold-dim);
+      font-weight: 700;
     }
     .pao-btn.active {
       border-color: var(--red);
-      background: rgba(196,69,54,0.15);
-      color: var(--red-soft);
-      font-weight: 600;
+      background: #fef2f2;
+      color: var(--red);
+      font-weight: 700;
     }
 
-    .hu-types { display: flex; flex-wrap: wrap; gap: 6px; }
+    .hu-types { display: flex; flex-wrap: wrap; gap: 8px; }
 
     .hu-btn {
-      padding: 7px 12px;
-      border: 1px solid var(--divider);
-      border-radius: 6px;
-      background: rgba(0,0,0,0.12);
-      color: var(--cream-mute);
-      font-size: 12px;
+      padding: 8px 14px;
+      border: 1.5px solid var(--divider);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text-light);
+      font-size: 14px;
       cursor: pointer;
     }
 
     .hu-btn.active {
       border-color: var(--gold);
-      background: rgba(201,168,76,0.15);
-      color: var(--gold);
-      font-weight: 600;
+      background: #fffbeb;
+      color: var(--gold-dim);
+      font-weight: 700;
     }
 
     .bangjin-hint {
-      font-size: 12px;
-      color: var(--cream-mute);
+      font-size: 13px;
+      color: var(--text-light);
       margin-top: 10px;
       padding-top: 10px;
       border-top: 1px solid var(--divider);
     }
 
-    .bangjin-hint.has-bangjin { color: var(--gold); }
+    .bangjin-hint.has-bangjin { color: var(--gold-dim); font-weight: 600; }
 
     .result-card {
-      background: var(--felt-deep);
-      border: 1px solid rgba(201,168,76,0.3);
+      background: var(--red);
+      border: none;
+      box-shadow: 0 2px 10px rgba(185,28,28,0.2);
     }
+    .result-card .card-title { color: var(--gold-soft); }
 
     .result-table { width: 100%; }
     .result-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--divider);
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
       cursor: pointer;
     }
     .result-row:last-child { border-bottom: none; }
-    .result-row.header { cursor: default; font-size: 12px; color: var(--cream-mute); }
-    .player-col { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .result-row.header { cursor: default; font-size: 13px; color: rgba(255,255,255,0.5); }
+    .player-col { display: flex; align-items: center; gap: 8px; font-size: 16px; color: #fff; font-weight: 600; }
 
-    .score-col { font-weight: 700; font-size: 17px; min-width: 60px; text-align: right; font-variant-numeric: tabular-nums; }
-    .score-col.positive { color: var(--win); }
-    .score-col.negative { color: var(--red-soft); }
-    .score-col.zhuang { color: var(--gold); }
+    .score-col { font-weight: 800; font-size: 20px; min-width: 70px; text-align: right; font-variant-numeric: tabular-nums; color: #fff; }
+    .score-col.positive { color: var(--gold-soft); }
+    .score-col.negative { color: rgba(255,255,255,0.6); }
+    .score-col.zhuang { color: var(--gold-soft); }
 
     .player-detail {
       display: none;
-      padding: 8px 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 6px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 8px;
       margin-top: 6px;
-      font-size: 12px;
-      color: var(--cream-mute);
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
     }
 
     .player-detail.show { display: block; }
     .player-detail .row { display: flex; justify-content: space-between; padding: 3px 0; }
-    .player-detail .row span:last-child { color: var(--cream-soft); }
+    .player-detail .row span:last-child { color: rgba(255,255,255,0.85); }
 
     .total-check {
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid var(--divider);
-      font-size: 12px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      font-size: 13px;
       text-align: center;
-      color: var(--cream-mute);
+      color: rgba(255,255,255,0.5);
     }
 
-    .total-check.valid { color: var(--win); }
-    .total-check.invalid { color: var(--red-soft); }
+    .total-check.valid { color: var(--gold-soft); }
+    .total-check.invalid { color: #fca5a5; }
 
     .action-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--wood);
+      background: #fff;
       padding: 10px 16px;
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       display: flex;
       gap: 10px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.08);
     }
 
     .btn {
       flex: 1;
-      padding: 13px;
+      padding: 14px;
       border: none;
-      border-radius: 8px;
-      font-size: 15px;
-      font-weight: 600;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
     }
     .btn-reset {
-      background: var(--wood-mid);
-      color: var(--cream-soft);
+      background: #f5f5f4;
+      color: var(--text-mid);
     }
     .btn-share {
-      background: var(--cream);
-      color: var(--wood);
+      background: var(--red);
+      color: #fff;
     }
 
     .toast {
@@ -256,41 +263,43 @@
       top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: var(--wood);
-      color: var(--cream);
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
+      background: var(--text-dark);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
       transition: transform 0.3s;
       z-index: 1000;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
 
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     .section-toggle {
-      font-size: 11px;
-      color: var(--cream-mute);
+      font-size: 13px;
+      color: var(--text-light);
       cursor: pointer;
       float: right;
-      padding: 2px 8px;
+      padding: 2px 10px;
       border: 1px solid var(--divider);
-      border-radius: 4px;
-      background: transparent;
+      border-radius: 6px;
+      background: #fff;
     }
-    .section-toggle:active { background: rgba(255,255,255,0.06); }
-    .gang-section { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--divider); }
+    .section-toggle:active { background: #f5f5f4; }
+    .gang-section { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--divider); }
     .gang-section.show { display: block; }
 
     .hu-explain {
       display: none;
       margin-top: 10px;
-      padding: 8px 10px;
-      font-size: 12px;
-      color: var(--cream-mute);
-      background: rgba(0,0,0,0.15);
-      border-radius: 6px;
-      line-height: 1.6;
+      padding: 10px 12px;
+      font-size: 13px;
+      color: var(--text-mid);
+      background: #fef9ef;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      line-height: 1.7;
     }
     .hu-explain.show { display: block; }
   </style>
@@ -783,68 +792,23 @@
     };
 
     const explainEl = document.getElementById('hu-explain');
-    let longPressTimer = null;
-    let longPressed = false;
-
-    function showExplain(type) {
-      if (huExplains[type]) {
-        explainEl.textContent = huExplains[type];
-        explainEl.classList.add('show');
-        explainEl.dataset.type = type;
-      }
-    }
-
-    function hideExplain() {
-      explainEl.classList.remove('show');
-      explainEl.dataset.type = '';
-    }
 
     document.querySelectorAll('.hu-btn:not(.hu-player)').forEach(btn => {
-      // 长按显示解释
-      btn.addEventListener('touchstart', (e) => {
-        longPressed = false;
-        longPressTimer = setTimeout(() => {
-          longPressed = true;
-          const t = btn.dataset.type;
-          if (explainEl.dataset.type === t && explainEl.classList.contains('show')) {
-            hideExplain();
-          } else {
-            showExplain(t);
-          }
-        }, 500);
-      }, { passive: true });
-
-      btn.addEventListener('touchend', () => {
-        clearTimeout(longPressTimer);
-        if (longPressed) { longPressed = false; return; }
-      });
-
-      btn.addEventListener('touchmove', () => {
-        clearTimeout(longPressTimer);
-      }, { passive: true });
-
-      // PC 端右键也能看解释
-      btn.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        const t = btn.dataset.type;
-        if (explainEl.dataset.type === t && explainEl.classList.contains('show')) {
-          hideExplain();
-        } else {
-          showExplain(t);
-        }
-      });
-
-      // 点击：切换选中 + 隐藏解释
       btn.addEventListener('click', () => {
-        if (longPressed) return;
-        hideExplain();
         const t = btn.dataset.type;
         if (state.huTypes.has(t)) {
+          // 取消选中 → 隐藏解释
           state.huTypes.delete(t);
           btn.classList.remove('active');
+          explainEl.classList.remove('show');
         } else {
+          // 选中 → 显示该类型解释
           state.huTypes.add(t);
           btn.classList.add('active');
+          if (huExplains[t]) {
+            explainEl.textContent = huExplains[t];
+            explainEl.classList.add('show');
+          }
           // 处理互斥
           if (exclusiveGroups[t]) {
             exclusiveGroups[t].forEach(ex => {
@@ -888,6 +852,7 @@
       document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.pao-btn[data-pao="none"]').classList.add('active');
       document.querySelectorAll('.hu-btn:not(.hu-player)').forEach(b => b.classList.remove('active'));
+      document.getElementById('hu-explain').classList.remove('show');
       document.querySelectorAll('.player-detail').forEach(d => d.classList.remove('show'));
       document.querySelectorAll('.gang-section').forEach(s => s.classList.remove('show'));
       document.getElementById('toggle-gang').textContent = '显示杠牌';
