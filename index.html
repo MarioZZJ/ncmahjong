@@ -429,21 +429,22 @@
         gangjinScore = 30; // 每家10子 × 3家
       }
       
-      // 计算精牌总分
-      const totalJingScore = Object.values(jingScores).reduce((a,b)=>a+b,0);
-      const jingPayPerPerson = totalJingScore / 3;
+      // 计算精牌总分（其他三家各付）
+      const totalJingFromThree = Object.values(jingScores).reduce((a,b)=>a+b,0);
       
       players.forEach(p => {
         let score = 0;
         const detail = [];
         
-        // 精牌分：应收 - 应付
+        // 精牌分：有精的玩家从3家各收，没精的玩家付给有精的玩家
         if (jingScores[p] > 0) {
-          score += jingScores[p] - jingPayPerPerson;
-          detail.push(`精牌: +${jingScores[p]} - ${Math.round(jingPayPerPerson)}`);
+          // 有精：从3家各收 jingScores[p]
+          score += jingScores[p] * 3;
+          detail.push(`精牌: +${jingScores[p]}×3`);
         } else {
-          score -= jingPayPerPerson;
-          detail.push(`精牌: -${Math.round(jingPayPerPerson)}`);
+          // 没精：付给有精的玩家
+          score -= totalJingFromThree;
+          detail.push(`精牌: -${totalJingFromThree}`);
         }
         
         // 杠精分
@@ -459,17 +460,20 @@
         
         // 胡牌分
         if (p === huPerson) {
+          // 胡牌者
           let hp = huScore;
-          // 庄家胡 ×2
           if (huPerson === state.zhuang) {
+            // 庄家胡：基础分×2
             hp *= 2;
           }
           
           if (isZimo) {
-            // 自摸：三家各付
-            const fromEach = hp;
-            score += fromEach * 3;
-            detail.push(`自摸: +${fromEach}×3`);
+            // 自摸：三家各付（庄家付双倍）
+            const fromZhuang = hp * 2;
+            const fromOther = hp;
+            // 其他三家中庄家付双倍
+            score += fromZhuang + fromOther * 2;
+            detail.push(`自摸: +${fromZhuang}+${fromOther}×2`);
           } else {
             // 点炮：点炮者付×2
             score += hp * 2;
@@ -487,6 +491,12 @@
           if (huPerson === state.zhuang) hp *= 2;
           score -= hp * 2;
           detail.push(`点炮: -${hp}×2`);
+        } else if (isZimo) {
+          // 自摸时非胡牌者付款（庄家付双倍）
+          let pay = huScore;
+          if (state.zhuang === p) pay *= 2;
+          score -= pay;
+          detail.push(`自摸: -${pay}`);
         }
         
         // 明杠暗杠（不产生分数，只记录）
