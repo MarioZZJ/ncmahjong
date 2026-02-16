@@ -4,70 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>南昌麻将记分器</title>
-  <meta name="theme-color" content="#c9a227">
+  <meta name="theme-color" content="#1a5c2a">
   <link rel="manifest" href="manifest.json">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --primary: #c9a227;
-      --primary-light: #e6c84d;
-      --accent: #e74c3c;
-      --bg: #0d1117;
-      --card: #161b22;
-      --card-border: #30363d;
-      --text: #e6edf3;
-      --text-light: #8b949e;
-      --red: #f85149;
-      --green: #3fb950;
-      --gold: #ffd700;
+      --felt: #1a5c2a;
+      --felt-light: #237a38;
+      --felt-dark: #0e3d1a;
+      --wood: #8b5e3c;
+      --wood-light: #a67c52;
+      --wood-dark: #5c3a1e;
+      --ivory: #f5f0e1;
+      --ivory-dim: #c8c0aa;
+      --gold: #d4a017;
+      --gold-light: #e8c252;
+      --red: #c0392b;
+      --red-light: #e74c3c;
+      --green-bright: #27ae60;
+      --tile-bg: rgba(245,240,225,0.08);
+      --tile-border: rgba(245,240,225,0.15);
       touch-action: manipulation;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--felt-dark);
+      background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(35,122,56,0.6) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      color: var(--ivory);
       min-height: 100vh;
       padding-bottom: 120px;
     }
 
     .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-      color: #0d1117;
-      padding: 20px;
+      background: linear-gradient(180deg, var(--wood-dark) 0%, var(--wood) 40%, var(--wood-light) 50%, var(--wood) 60%, var(--wood-dark) 100%);
+      color: var(--gold-light);
+      padding: 18px 20px;
       text-align: center;
+      border-bottom: 3px solid var(--wood-dark);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
-    .header h1 { font-size: 22px; font-weight: 700; }
+    .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 4px; }
 
     .container { padding: 16px; max-width: 600px; margin: 0 auto; }
 
     .card {
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(26,92,42,0.7) 0%, rgba(14,61,26,0.8) 100%);
+      border: 2px solid var(--wood);
+      border-radius: 10px;
       padding: 16px;
       margin-bottom: 12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3);
     }
 
     .card-title {
       font-size: 14px;
       font-weight: 600;
-      color: var(--primary);
+      color: var(--gold-light);
       margin-bottom: 12px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
     .players-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 
     .player-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
+      background: var(--tile-bg);
+      border: 1px solid var(--tile-border);
+      border-radius: 8px;
       padding: 12px;
     }
 
-    .player-card.active { border-color: var(--primary); background: rgba(201,162,39,0.08); }
+    .player-card.active { border-color: var(--gold); background: rgba(212,160,23,0.1); }
 
     .player-name {
       font-size: 14px;
@@ -76,29 +88,30 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      color: var(--ivory);
     }
 
     .player-name .badge {
       font-size: 11px;
       padding: 2px 8px;
       border-radius: 10px;
-      background: var(--primary);
-      color: #0d1117;
+      background: var(--red);
+      color: var(--ivory);
       font-weight: 600;
     }
 
     .jing-input-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .jing-input-row:last-child { margin-bottom: 0; }
-    .jing-label { font-size: 12px; color: var(--text-light); }
+    .jing-label { font-size: 12px; color: var(--ivory-dim); }
     .jing-controls { display: flex; align-items: center; gap: 6px; }
 
     .jing-btn {
       width: 28px;
       height: 28px;
       border-radius: 6px;
-      border: 1px solid var(--card-border);
-      background: transparent;
-      color: var(--text);
+      border: 1px solid var(--tile-border);
+      background: rgba(245,240,225,0.06);
+      color: var(--ivory);
       font-size: 14px;
       cursor: pointer;
       display: flex;
@@ -106,8 +119,8 @@
       justify-content: center;
     }
 
-    .jing-btn:active { background: var(--primary); color: #0d1117; }
-    .jing-val { width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gold); }
+    .jing-btn:active { background: var(--gold); color: var(--felt-dark); }
+    .jing-val { width: 24px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gold-light); }
 
     .zhuang-selector, .pao-selector { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -115,126 +128,132 @@
       flex: 1;
       min-width: 70px;
       padding: 10px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--tile-border);
       border-radius: 8px;
-      background: transparent;
-      color: var(--text-light);
+      background: rgba(245,240,225,0.05);
+      color: var(--ivory-dim);
       font-size: 13px;
       cursor: pointer;
     }
 
-    .zhuang-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
-    .pao-btn.active { border-color: var(--accent); background: rgba(248,81,73,0.15); color: var(--red); }
+    .zhuang-btn.active { border-color: var(--gold); background: rgba(212,160,23,0.2); color: var(--gold-light); }
+    .pao-btn.active { border-color: var(--red); background: rgba(192,57,43,0.2); color: var(--red-light); }
 
     .hu-types { display: flex; flex-wrap: wrap; gap: 8px; }
 
     .hu-btn {
       padding: 8px 14px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--tile-border);
       border-radius: 20px;
-      background: transparent;
-      color: var(--text-light);
+      background: rgba(245,240,225,0.05);
+      color: var(--ivory-dim);
       font-size: 13px;
       cursor: pointer;
     }
 
-    .hu-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
+    .hu-btn.active { border-color: var(--gold); background: rgba(212,160,23,0.2); color: var(--gold-light); }
 
     .bangjin-hint {
       font-size: 12px;
-      color: var(--text-light);
+      color: var(--ivory-dim);
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px solid var(--card-border);
+      border-top: 1px solid var(--tile-border);
     }
 
-    .bangjin-hint.has-bangjin { color: var(--gold); }
+    .bangjin-hint.has-bangjin { color: var(--gold-light); }
 
-    .result-card { background: linear-gradient(180deg, rgba(201,162,39,0.1) 0%, var(--card) 100%); border: 1px solid var(--primary); }
+    .result-card {
+      background: linear-gradient(180deg, rgba(92,58,30,0.3) 0%, rgba(14,61,26,0.8) 100%);
+      border: 2px solid var(--gold);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 12px rgba(0,0,0,0.4);
+    }
 
     .result-table { width: 100%; }
-    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--card-border); cursor: pointer; }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--tile-border); cursor: pointer; }
     .result-row:last-child { border-bottom: none; }
-    .result-row.header { cursor: default; }
+    .result-row.header { cursor: default; color: var(--ivory-dim); }
     .player-col { display: flex; align-items: center; gap: 6px; }
 
     .score-col { font-weight: 600; font-size: 16px; min-width: 60px; text-align: right; }
-    .score-col.positive { color: var(--green); }
-    .score-col.negative { color: var(--red); }
-    .score-col.zhuang { color: var(--gold); }
+    .score-col.positive { color: var(--green-bright); }
+    .score-col.negative { color: var(--red-light); }
+    .score-col.zhuang { color: var(--gold-light); }
 
     .player-detail {
       display: none;
       padding: 10px;
-      background: rgba(0,0,0,0.2);
+      background: rgba(0,0,0,0.25);
       border-radius: 8px;
       margin-top: 8px;
       font-size: 12px;
-      color: var(--text-light);
+      color: var(--ivory-dim);
     }
 
     .player-detail.show { display: block; }
     .player-detail .row { display: flex; justify-content: space-between; padding: 3px 0; }
-    .player-detail .row span:last-child { color: var(--text); }
+    .player-detail .row span:last-child { color: var(--ivory); }
 
     .total-check {
       margin-top: 12px;
       padding-top: 12px;
-      border-top: 1px solid var(--card-border);
+      border-top: 1px solid var(--tile-border);
       font-size: 13px;
       text-align: center;
-      color: var(--text-light);
+      color: var(--ivory-dim);
     }
 
-    .total-check.valid { color: var(--green); }
-    .total-check.invalid { color: var(--red); }
+    .total-check.valid { color: var(--green-bright); }
+    .total-check.invalid { color: var(--red-light); }
 
     .action-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: var(--card);
+      background: linear-gradient(180deg, var(--wood) 0%, var(--wood-dark) 100%);
       padding: 12px 16px;
       padding-bottom: calc(12px + env(safe-area-inset-bottom));
       display: flex;
       gap: 10px;
-      border-top: 1px solid var(--card-border);
+      border-top: 3px solid var(--wood-light);
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
     }
 
-    .btn { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
-    .btn-reset { background: rgba(255,255,255,0.1); color: var(--text); }
-    .btn-share { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #0d1117; }
+    .btn { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .btn-reset { background: rgba(245,240,225,0.15); color: var(--ivory); border: 1px solid rgba(245,240,225,0.2); }
+    .btn-share { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--wood-dark); }
 
     .toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(-100px);
-      background: var(--card);
-      color: var(--text);
+      background: var(--wood);
+      color: var(--gold-light);
       padding: 12px 20px;
       border-radius: 8px;
       font-size: 14px;
       transition: transform 0.3s;
       z-index: 1000;
-      border: 1px solid var(--primary);
+      border: 1px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
 
     .toast.show { transform: translateX(-50%) translateY(0); }
 
     .section-toggle {
       font-size: 12px;
-      color: var(--text-light);
+      color: var(--ivory-dim);
       cursor: pointer;
       float: right;
       padding: 2px 8px;
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--tile-border);
       border-radius: 4px;
       background: transparent;
     }
-    .section-toggle:active { background: rgba(255,255,255,0.1); }
-    .gang-section { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--card-border); }
+    .section-toggle:active { background: rgba(245,240,225,0.1); }
+    .gang-section { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--tile-border); }
     .gang-section.show { display: block; }
   </style>
 </head>
@@ -308,11 +327,11 @@
     <div class="card">
       <div class="card-title">胡牌方式</div>
       <div class="pao-selector">
-        <button class="pao-btn active" data-pao="none">自摸</button>
         <button class="pao-btn" data-pao="dong">东点炮</button>
         <button class="pao-btn" data-pao="nan">南点炮</button>
         <button class="pao-btn" data-pao="xi">西点炮</button>
         <button class="pao-btn" data-pao="bei">北点炮</button>
+        <button class="pao-btn active" data-pao="none">自摸</button>
       </div>
     </div>
 
