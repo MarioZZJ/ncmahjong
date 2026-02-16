@@ -126,9 +126,9 @@
     .zhuang-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
     .pao-btn.active { border-color: var(--accent); background: rgba(248,81,73,0.15); color: var(--red); }
     
-    .hu-types, .special-options { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hu-types { display: flex; flex-wrap: wrap; gap: 8px; }
     
-    .hu-btn, .special-btn {
+    .hu-btn {
       padding: 8px 14px;
       border: 1px solid var(--card-border);
       border-radius: 20px;
@@ -139,26 +139,23 @@
     }
     
     .hu-btn.active { border-color: var(--primary); background: rgba(201,162,39,0.15); color: var(--gold); }
-    .special-btn.active { border-color: var(--accent); background: rgba(248,81,73,0.15); color: var(--red); }
     
-    .bangjin-check {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .bangjin-hint {
+      font-size: 12px;
+      color: var(--text-light);
       margin-top: 10px;
       padding-top: 10px;
       border-top: 1px solid var(--card-border);
     }
     
-    .bangjin-check input { width: 16px; height: 16px; accent-color: var(--gold); }
-    .bangjin-check label { font-size: 13px; color: var(--text-light); }
+    .bangjin-hint.has-bangjin { color: var(--gold); }
     
     .result-card { background: linear-gradient(180deg, rgba(201,162,39,0.1) 0%, var(--card) 100%); border: 1px solid var(--primary); }
     
     .result-table { width: 100%; }
-    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--card-border); }
+    .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--card-border); cursor: pointer; }
     .result-row:last-child { border-bottom: none; }
-    .result-row.header { font-size: 12px; color: var(--text-light); padding-bottom: 8px; }
+    .result-row.header { cursor: default; }
     .player-col { display: flex; align-items: center; gap: 6px; }
     
     .score-col { font-weight: 600; font-size: 16px; min-width: 60px; text-align: right; }
@@ -166,10 +163,31 @@
     .score-col.negative { color: var(--red); }
     .score-col.zhuang { color: var(--gold); }
     
-    .detail-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--card-border); }
-    .detail-title { font-size: 12px; color: var(--text-light); margin-bottom: 8px; }
-    .detail-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-light); padding: 4px 0; }
-    .detail-row span:last-child { color: var(--text); }
+    .player-detail {
+      display: none;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+    
+    .player-detail.show { display: block; }
+    .player-detail .row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .player-detail .row span:last-child { color: var(--text); }
+    
+    .total-check {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--card-border);
+      font-size: 13px;
+      text-align: center;
+      color: var(--text-light);
+    }
+    
+    .total-check.valid { color: var(--green); }
+    .total-check.invalid { color: var(--red); }
     
     .action-bar {
       position: fixed;
@@ -234,10 +252,7 @@
           <div class="jing-input-row"><span class="jing-label">副精</span><div class="jing-controls"><button class="jing-btn" data-player="bei" data-type="fu" data-dir="-1">−</button><span class="jing-val" id="bei-fu">0</span><button class="jing-btn" data-player="bei" data-type="fu" data-dir="1">+</button></div></div>
         </div>
       </div>
-      <div class="bangjin-check">
-        <input type="checkbox" id="bangjin">
-        <label for="bangjin">霸王精（只有一家有精）</label>
-      </div>
+      <div class="bangjin-hint" id="bangjin-hint">只有一家有精时自动触发霸王精</div>
     </div>
     
     <div class="card">
@@ -272,38 +287,46 @@
         <button class="hu-btn" data-type="qixing">七星</button>
         <button class="hu-btn" data-type="jingdiao">精钓</button>
         <button class="hu-btn" data-type="gangshang">杠上花</button>
+        <button class="hu-btn" data-type="gang">暗杠</button>
+        <button class="hu-btn" data-type="minggang">明杠</button>
         <button class="hu-btn" data-type="tianhu">天胡</button>
         <button class="hu-btn" data-type="dihu">地胡</button>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-title">⚡ 特殊状态</div>
-      <div class="special-options">
-        <button class="special-btn" data-special="deguo">🇩🇪 德国</button>
-        <button class="special-btn" data-special="dezhongde">🇩🇪🇩🇪 德中德</button>
-        <button class="special-btn" data-special="gang">🚪 暗杠</button>
-        <button class="special-btn" data-special="minggang">🚪 明杠</button>
-        <button class="special-btn" data-special="gangjin">💣 杠精</button>
+        <button class="hu-btn" data-type="deguo">🇩🇪 德国</button>
+        <button class="hu-btn" data-type="gangjin">💣 杠精</button>
       </div>
     </div>
     
     <div class="card result-card">
-      <div class="card-title">📊 结算结果</div>
+      <div class="card-title">📊 结算结果（点击展开明细）</div>
       <div class="result-table">
         <div class="result-row header"><span>玩家</span><span style="text-align:right">进出子</span></div>
-        <div class="result-row"><div class="player-col"><span>东家</span><span class="badge" id="res-dong-badge" style="display:none">庄</span></div><span class="score-col" id="res-dong">0</span></div>
-        <div class="result-row"><div class="player-col"><span>南家</span><span class="badge" id="res-nan-badge" style="display:none">庄</span></div><span class="score-col" id="res-nan">0</span></div>
-        <div class="result-row"><div class="player-col"><span>西家</span><span class="badge" id="res-xi-badge" style="display:none">庄</span></div><span class="score-col" id="res-xi">0</span></div>
-        <div class="result-row"><div class="player-col"><span>北家</span><span class="badge" id="res-bei-badge" style="display:none">庄</span></div><span class="score-col" id="res-bei">0</span></div>
+        
+        <div class="result-row" data-player="dong">
+          <div class="player-col"><span>东家</span><span class="badge" id="res-dong-badge" style="display:none">庄</span></div>
+          <span class="score-col" id="res-dong">0</span>
+        </div>
+        <div class="player-detail" id="detail-dong"></div>
+        
+        <div class="result-row" data-player="nan">
+          <div class="player-col"><span>南家</span><span class="badge" id="res-nan-badge" style="display:none">庄</span></div>
+          <span class="score-col" id="res-nan">0</span>
+        </div>
+        <div class="player-detail" id="detail-nan"></div>
+        
+        <div class="result-row" data-player="xi">
+          <div class="player-col"><span>西家</span><span class="badge" id="res-xi-badge" style="display:none">庄</span></div>
+          <span class="score-col" id="res-xi">0</span>
+        </div>
+        <div class="player-detail" id="detail-xi"></div>
+        
+        <div class="result-row" data-player="bei">
+          <div class="player-col"><span>北家</span><span class="badge" id="res-bei-badge" style="display:none">庄</span></div>
+          <span class="score-col" id="res-bei">0</span>
+        </div>
+        <div class="player-detail" id="detail-bei"></div>
       </div>
-      <div class="detail-section">
-        <div class="detail-title">明细</div>
-        <div class="detail-row"><span>精牌分</span><span id="detail-jing">0</span></div>
-        <div class="detail-row"><span>冲关/霸王</span><span id="detail-chongguan">0</span></div>
-        <div class="detail-row"><span>杠牌分</span><span id="detail-gang">0</span></div>
-        <div class="detail-row"><span>胡牌分</span><span id="detail-hu">0</span></div>
-      </div>
+      
+      <div class="total-check" id="total-check">总计: 0 ✓</div>
     </div>
   </div>
   
@@ -316,65 +339,73 @@
   
   <script>
     const players = ['dong', 'nan', 'xi', 'bei'];
+    const playerNames = { dong: '东', nan: '南', xi: '西', bei: '北' };
     
     let state = {
       zhuang: 'nan',
       pao: 'none',
       huTypes: new Set(),
-      specials: new Set(),
-      bangjin: false,
       players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
     };
     
     const chongguanTable = {5:2,6:3,7:4,8:5,9:6,10:7,11:8,12:9,13:10,14:11};
     
     function calculate() {
-      const jingScores = {};
+      // 1. 计算每家精牌基础分
+      const jingBase = {};
       let totalJing = 0;
+      let playersWithJing = [];
       
       players.forEach(p => {
-        jingScores[p] = state.players[p].zheng * 2 + state.players[p].fu;
-        totalJing += jingScores[p];
+        jingBase[p] = state.players[p].zheng * 2 + state.players[p].fu;
+        totalJing += jingBase[p];
+        if (jingBase[p] > 0) playersWithJing.push(p);
       });
       
-      let chongguanMulti = totalJing >= 5 && chongguanTable[totalJing] ? chongguanTable[totalJing] : 1;
-      let bangjinPlayer = null;
+      // 2. 霸王精判断（只有一家有精）
+      const isBangjin = playersWithJing.length === 1;
+      const bangjinPlayer = isBangjin ? playersWithJing[0] : null;
       
-      if (state.bangjin) {
-        for (const p of players) {
-          if (jingScores[p] > 0) {
-            bangjinPlayer = bangjinPlayer === null ? p : null;
-            if (!bangjinPlayer) break;
-          }
-        }
+      // 更新霸王精提示
+      const hint = document.getElementById('bangjin-hint');
+      if (isBangjin && bangjinPlayer) {
+        hint.textContent = `👑 霸王精：${playerNames[bangjinPlayer]}家`;
+        hint.classList.add('has-bangjin');
+      } else {
+        hint.textContent = '只有一家有精时自动触发霸王精';
+        hint.classList.remove('has-bangjin');
       }
       
-      const finalJingScores = {};
+      // 3. 冲关计算
+      let chongguanMulti = totalJing >= 5 && chongguanTable[totalJing] ? chongguanTable[totalJing] : 1;
+      
+      // 4. 计算每家精牌最终得分
+      const jingScores = {};
+      let chongguanBonus = 0;
+      
       players.forEach(p => {
-        let s = jingScores[p];
+        let s = jingBase[p];
         if (s > 0) {
-          s *= chongguanMulti;
-          if (state.bangjin && bangjinPlayer === p) s *= 2;
+          if (totalJing >= 5) s *= chongguanMulti; // 冲关
+          if (p === bangjinPlayer) s *= 2; // 霸王翻倍
         }
-        finalJingScores[p] = s;
+        jingScores[p] = s;
       });
       
-      let chongguanBonus = (chongguanMulti - 1) * Object.values(jingScores).reduce((a,b)=>a+b,0);
-      if (state.bangjin && bangjinPlayer) chongguanBonus += finalJingScores[bangjinPlayer];
+      if (totalJing >= 5) {
+        chongguanBonus = (chongguanMulti - 1) * Object.values(jingBase).reduce((a,b)=>a+b,0);
+      }
       
-      let gangScore = 0;
-      if (state.specials.has('gang')) gangScore += 6;
-      if (state.specials.has('minggang')) gangScore += 3;
-      if (state.specials.has('gangjin')) gangScore += 30;
-      
+      // 5. 胡牌分计算
       let baseScore = 0, huMulti = 1;
       let huPerson = state.zhuang;
       let isZimo = state.pao === 'none';
       if (!isZimo) huPerson = state.pao;
       
+      // 判断胡牌类型
       if (state.huTypes.has('tianhu') || state.huTypes.has('dihu')) {
         baseScore = 20;
-        huMulti = 0;
+        huMulti = 0; // 天胡地胡不再翻倍
       } else {
         if (state.huTypes.has('pinghu')) baseScore = 1;
         if (state.huTypes.has('zimo')) huMulti *= 2;
@@ -383,55 +414,125 @@
         if (state.huTypes.has('qixing')) huMulti *= 4;
         if (state.huTypes.has('jingdiao')) huMulti *= 2;
         if (state.huTypes.has('gangshang')) huMulti *= 2;
-        if (state.specials.has('dezhongde')) huMulti *= 4;
-        else if (state.specials.has('deguo')) huMulti *= 2;
+        if (state.huTypes.has('deguo')) huMulti *= 2;
       }
       
       const huScore = baseScore * huMulti;
+      
+      // 6. 结算每家
       const results = {};
+      const details = {};
+      
+      // 杠牌分（只有杠精有分）
+      let gangjinScore = 0;
+      if (state.huTypes.has('gangjin')) {
+        gangjinScore = 30; // 每家10子 × 3家
+      }
+      
+      // 计算精牌总分
+      const totalJingScore = Object.values(jingScores).reduce((a,b)=>a+b,0);
+      const jingPayPerPerson = totalJingScore / 3;
       
       players.forEach(p => {
         let score = 0;
-        score += finalJingScores[p];
-        score += gangScore;
+        const detail = [];
         
+        // 精牌分：应收 - 应付
+        if (jingScores[p] > 0) {
+          score += jingScores[p] - jingPayPerPerson;
+          detail.push(`精牌: +${jingScores[p]} - ${Math.round(jingPayPerPerson)}`);
+        } else {
+          score -= jingPayPerPerson;
+          detail.push(`精牌: -${Math.round(jingPayPerPerson)}`);
+        }
+        
+        // 杠精分
+        if (state.huTypes.has('gangjin')) {
+          if (p === huPerson) {
+            score += gangjinScore;
+            detail.push(`杠精: +${gangjinScore}`);
+          } else {
+            score -= 10;
+            detail.push(`杠精: -10`);
+          }
+        }
+        
+        // 胡牌分
         if (p === huPerson) {
           let hp = huScore;
-          if (huPerson === state.zhuang) hp *= 2;
-          if (isZimo) score += hp * 3;
-          else score += hp * 2;
-          if (state.specials.has('deguo') || state.specials.has('dezhongde')) score += 5;
+          // 庄家胡 ×2
+          if (huPerson === state.zhuang) {
+            hp *= 2;
+          }
+          
+          if (isZimo) {
+            // 自摸：三家各付
+            const fromEach = hp;
+            score += fromEach * 3;
+            detail.push(`自摸: +${fromEach}×3`);
+          } else {
+            // 点炮：点炮者付×2
+            score += hp * 2;
+            detail.push(`胡牌: +${hp}×2`);
+          }
+          
+          // 德国额外+5
+          if (state.huTypes.has('deguo')) {
+            score += 5;
+            detail.push(`德国: +5`);
+          }
         } else if (p === state.pao && !isZimo) {
+          // 点炮者付钱
           let hp = huScore;
           if (huPerson === state.zhuang) hp *= 2;
           score -= hp * 2;
+          detail.push(`点炮: -${hp}×2`);
+        }
+        
+        // 明杠暗杠（不产生分数，只记录）
+        if (state.huTypes.has('gang')) {
+          detail.push(`暗杠: 记录`);
+        }
+        if (state.huTypes.has('minggang')) {
+          detail.push(`明杠: 记录`);
         }
         
         results[p] = score;
+        details[p] = detail.length > 0 ? detail : ['无'];
       });
       
-      updateResults(results, finalJingScores, chongguanBonus, gangScore, huScore);
+      updateResults(results, details, jingScores, chongguanBonus, gangjinScore, huScore);
     }
     
-    function updateResults(results, jingScores, chongguan, gangScore, huScore) {
+    function updateResults(results, details, jingScores, chongguan, gangjinScore, huScore) {
+      let total = 0;
+      
       players.forEach(p => {
-        const el = document.getElementById('res-' + p);
         const s = results[p];
+        total += s;
+        
+        const el = document.getElementById('res-' + p);
         el.textContent = (s >= 0 ? '+' : '') + s;
         el.className = 'score-col ' + (s > 0 ? 'positive' : s < 0 ? 'negative' : '') + (p === state.zhuang ? ' zhuang' : '');
+        
+        // 明细
+        const detailEl = document.getElementById('detail-' + p);
+        detailEl.innerHTML = details[p].map(d => `<div class="row"><span></span><span>${d}</span></div>`).join('');
       });
       
+      // 庄家标记
       players.forEach(p => {
         document.getElementById(p + '-badge').style.display = (p === state.zhuang) ? 'inline' : 'none';
         document.getElementById('res-' + p + '-badge').style.display = (p === state.zhuang) ? 'inline' : 'none';
       });
       
-      document.getElementById('detail-jing').textContent = Object.values(jingScores).reduce((a,b)=>a+b,0);
-      document.getElementById('detail-chongguan').textContent = chongguan;
-      document.getElementById('detail-gang').textContent = gangScore;
-      document.getElementById('detail-hu').textContent = huScore;
+      // 总计检查
+      const totalEl = document.getElementById('total-check');
+      totalEl.textContent = `总计: ${total} ${total === 0 ? '✓' : '✗'}`;
+      totalEl.className = 'total-check ' + (total === 0 ? 'valid' : 'invalid');
     }
     
+    // 精牌按钮事件
     document.querySelectorAll('.jing-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const p = btn.dataset.player, t = btn.dataset.type, d = parseInt(btn.dataset.dir);
@@ -441,6 +542,7 @@
       });
     });
     
+    // 庄家选择
     document.querySelectorAll('.zhuang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.zhuang-btn').forEach(b => b.classList.remove('active'));
@@ -450,6 +552,7 @@
       });
     });
     
+    // 点炮选择
     document.querySelectorAll('.pao-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
@@ -459,6 +562,7 @@
       });
     });
     
+    // 胡牌类型
     document.querySelectorAll('.hu-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const t = btn.dataset.type;
@@ -468,23 +572,18 @@
       });
     });
     
-    document.querySelectorAll('.special-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const s = btn.dataset.special;
-        state.specials.has(s) ? state.specials.delete(s) : state.specials.add(s);
-        btn.classList.toggle('active');
-        calculate();
+    // 点击展开明细
+    document.querySelectorAll('.result-row[data-player]').forEach(row => {
+      row.addEventListener('click', () => {
+        const p = row.dataset.player;
+        document.getElementById('detail-' + p).classList.toggle('show');
       });
     });
     
-    document.getElementById('bangjin').addEventListener('change', e => {
-      state.bangjin = e.target.checked;
-      calculate();
-    });
-    
+    // 重置
     document.getElementById('btn-reset').addEventListener('click', () => {
       state = {
-        zhuang: 'nan', pao: 'none', huTypes: new Set(), specials: new Set(), bangjin: false,
+        zhuang: 'nan', pao: 'none', huTypes: new Set(),
         players: { dong: {zheng:0,fu:0}, nan: {zheng:0,fu:0}, xi: {zheng:0,fu:0}, bei: {zheng:0,fu:0} }
       };
       players.forEach(p => {
@@ -495,20 +594,24 @@
       document.querySelector('.zhuang-btn[data-zhuang="nan"]').classList.add('active');
       document.querySelectorAll('.pao-btn').forEach(b => b.classList.remove('active'));
       document.querySelector('.pao-btn[data-pao="none"]').classList.add('active');
-      document.querySelectorAll('.hu-btn, .special-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('bangjin').checked = false;
+      document.querySelectorAll('.hu-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.player-detail').forEach(d => d.classList.remove('show'));
       calculate();
     });
     
+    // 复制战绩
     document.getElementById('btn-share').addEventListener('click', async () => {
       const lines = ['🀄 南昌麻将结算', '----------------'];
       players.forEach(p => {
         const s = document.getElementById('res-' + p).textContent;
         const z = p === state.zhuang ? ' [庄]' : '';
-        lines.push(`${p === 'dong' ? '东' : p === 'nan' ? '南' : p === 'xi' ? '西' : '北'}家${z}: ${s}`);
+        lines.push(`${playerNames[p]}家${z}: ${s}`);
       });
       lines.push('----------------');
-      lines.push(`精:${document.getElementById('detail-jing').textContent} 冲关:${document.getElementById('detail-chongguan').textContent} 杠:${document.getElementById('detail-gang').textContent} 胡:${document.getElementById('detail-hu').textContent}`);
+      lines.push(`庄家: ${playerNames[state.zhuang]} | ${state.pao === 'none' ? '自摸' : playerNames[state.pao] + '点炮'}`);
+      if (state.huTypes.size > 0) {
+        lines.push(`牌型: ${Array.from(state.huTypes).join(', ')}`);
+      }
       
       try {
         await navigator.clipboard.writeText(lines.join('\n'));
